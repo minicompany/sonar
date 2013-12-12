@@ -106,7 +106,6 @@ window.SS = typeof window.SS === 'object' ? window.SS : {};
 
     focus: function() {
       this.render();
-//      this.showDetails();
     },
 
 

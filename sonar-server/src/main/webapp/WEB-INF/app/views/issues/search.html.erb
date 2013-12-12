@@ -107,4 +107,9 @@
 
   window.SS.IssuesNavigatorApp.start();
   window.SS.IssuesNavigatorApp.filterBarView.restoreFromQuery(queryParams);
+
+  $j(function() {
+    $j('#footer').remove();
+    $j('.navigator-result').eq(1).addClass('active');
+  });
 </script>

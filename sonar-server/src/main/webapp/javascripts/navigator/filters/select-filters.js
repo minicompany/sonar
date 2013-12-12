@@ -204,7 +204,7 @@ window.SS = typeof window.SS === 'object' ? window.SS : {};
             });
 
             if (icons && icons[key]) {
-              model.set('icon', baseUrl + icons[key]);
+              model.set('icon', icons[key]);
             }
 
             return model;

@@ -52,11 +52,11 @@ window.SS = typeof window.SS === 'object' ? window.SS : {};
           'INFO': window.SS.phrases.severities.info
         },
         choiceIcons: {
-          'BLOCKER': '/images/priority/BLOCKER.png',
-          'CRITICAL': '/images/priority/CRITICAL.png',
-          'MAJOR': '/images/priority/MAJOR.png',
-          'MINOR': '/images/priority/MINOR.png',
-          'INFO': '/images/priority/INFO.png'
+          'BLOCKER': 'icon-severity-blocker',
+          'CRITICAL': 'icon-severity-critical',
+          'MAJOR': 'icon-severity-major',
+          'MINOR': 'icon-severity-minor',
+          'INFO': 'icon-severity-info'
         }
       }),
 
