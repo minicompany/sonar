@@ -236,17 +236,19 @@
 }
 .navigator-result-list {
   position: fixed;
-  top: 67px;
+  top: 107px;
   bottom: 0;
   left: 0;
   width: 300px;
   border-right: 1px solid #efefef;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
 }
 .navigator-result {
   padding: 10px;
-  cursor: default;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 .navigator-result.active {
@@ -290,6 +292,39 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.navigator-results-status-bar {
+  position: fixed;
+  top: 67px;
+  left: 0;
+  width: 300px;
+  height: 40px;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 10px;
+  border-right: 1px solid #efefef;
+  border-bottom: 1px solid #efefef;
+  line-height: 20px;
+}
+.navigator-results-status-bar:before,
+.navigator-results-status-bar:after {
+  display: table;
+  content: "";
+  line-height: 0;
+}
+.navigator-results-status-bar:after {
+  clear: both;
+}
+.navigator-results-order {
+  float: left;
+  color: #5e5e5e;
+  font-size: 11px;
+  cursor: pointer;
+}
+.navigator-results-stat {
+  float: right;
+  color: #5e5e5e;
+  font-size: 11px;
 }
 .navigator-content {
   position: fixed;

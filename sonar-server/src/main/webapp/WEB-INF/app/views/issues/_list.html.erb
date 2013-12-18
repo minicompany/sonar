@@ -1,6 +1,8 @@
 <ul class="navigator-result-list">
   <% @issues_result.issues.each do |issue| %>
-  <li class="navigator-result navigator-issue">
+  <% project = @issues_result.project(issue)
+  component = @issues_result.component(issue) -%>
+  <li class="navigator-result navigator-issue" data-component-key="<%= h component.key -%>">
     <div class="navigator-result-header">
       <div class="navigator-result-align">
         <i class="icon-severity-critical"></i>
@@ -17,17 +19,18 @@
     </div>
 
     <div class="navigator-issue-component">
-      <% project = @issues_result.project(issue)
-      component = @issues_result.component(issue) -%>
-      <div class="subtitle"><%= h (truncate(project.name, :length => 100)) -%></div>
-      <% if component %>
-      <!-- Do not display component name when issue is on module -->
-      <% if component.key != project.key %>
-      <%= h component.longName() -%>
-      <% end %>
-      <% else %>
-      <del><%= h issue.componentKey() %></del>
-      <% end %>
+      <div class="subtitle">
+        <%= h (truncate(project.name, :length => 100)) -%>
+        >
+        <% if component %>
+        <!-- Do not display component name when issue is on module -->
+        <% if component.key != project.key %>
+        <%= h component.name() -%>
+        <% end %>
+        <% else %>
+        <del><%= h issue.componentKey() %></del>
+        <% end %>
+      </div>
     </div>
 
     <!--<div class="navigator-result-footer">-->
@@ -38,211 +41,15 @@
   <% end %>
 </ul>
 
+<div class="navigator-results-status-bar">
+  <div class="navigator-results-order">
+    Order by &darr;
+  </div>
+  <div class="navigator-results-stat">
+    Found: 141
+  </div>
+</div>
+
 <div class="navigator-content">
-  <div class="navigator-content-header">
-    <div class="navigator-content-title">This class has an LCOM4 of 2, which is greater than 1 authorized.</div>
-    <div class="navigator-content-subtitle">Refactor this firstOf() to only use a rule or token type for each alternative.</div>
-    <div class="navigator-content-actions">&larr; 1 of 134 &rarr;</div>
 
-    <div class="code-issue-actions">
-      <a href="#" onclick="return issueForm('comment', this)"
-         class="link-action spacer-right" autofocus="">Comment</a>
-
-
-            <span class="spacer-right">
-
-            <a href="#" onclick="return issueForm('assign', this)" class="link-action">Assign</a>
-
-            [<a href="#" onclick="return assignIssueToMe(this)" class="link-action">to
-              me</a>]
-
-
-            </span>
-
-            <span class="spacer-right">
-
-            <a href="#" onclick="return issueForm('plan', this)"
-               class="link-action">Plan</a>
-
-            </span>
-
-
-      <a href="#" onclick="return doIssueTransition(this, 'confirm')"
-         class="link-action spacer-right">Confirm</a>
-
-
-      <div class="dropdown">
-        <a href="#" class="link-action link-more"
-           onclick="showDropdownMenuOnElement($j(this).next('.dropdown-menu')); return false;">More
-          actions</a>
-        <ul style="display: none;" class="dropdown-menu">
-
-
-          <li>
-            <a href="#" onclick="return issueForm('severity', this)"
-               class="link-action spacer-right">Change severity</a>
-          </li>
-
-
-          <li>
-            <a href="#" onclick="return doIssueTransition(this, 'resolve')"
-               class="link-action spacer-right">Resolve</a>
-          </li>
-
-          <li>
-            <a href="#"
-               onclick="return doIssueTransition(this, 'falsepositive')"
-               class="link-action spacer-right">False positive</a>
-          </li>
-
-
-          <li>
-            <a href="#"
-               onclick="return doPluginIssueAction(this, 'link-to-jira')"
-               class="link-action spacer-right">Link to JIRA</a>
-          </li>
-
-        </ul>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="navigator-content-body">
-    <div class="navigator-content-main">
-
-      <div class="source_title">
-        <div class="subtitle">
-          Sonar .NET Ecosystem
-        </div>
-        <span class="h1">
-          <img alt="" height="16" src="/images/q/CLA.png?1386237672" title="" width="16">
-          <a href="/resource/index/org.codehaus.sonar-plugins.dotnet.csharp:sonar-csharp-plugin:org.sonar.plugins.csharp.squid.CSharpSquidSensor?layout=false&amp;tab=issues"
-             class="issue-component-link"
-             onclick="window.open(this.href,'resource-org-codehaus-sonar-plugins-dotnet-csharp-sonar-csharp-plugin-org-sonar-plugins-csharp-squid-csharpsquidsensor','height=800,width=900,scrollbars=1,resizable=1');return false;">org.sonar.plugins.csharp.squid.CSharpSquidSensor</a>
-        </span>
-      </div>
-
-      <table id="sources_76" class="sources2 code" cellpadding="0" cellspacing="0">
-        <script>
-          $j("#sources_76").on("click", "span.sym", {id: "sources_76"}, highlight_usages);
-        </script>
-        <tbody>
-        <tr class="row pos1">
-          <td class="lid L65"><a name="L65" href="#L65">65</a></td>
-          <td class="line ">
-            <pre><span class="k">import </span>java.util.Locale;</pre>
-          </td>
-        </tr>
-        <tr class="row pos2">
-          <td class="lid L66"><a name="L66" href="#L66">66</a></td>
-          <td class="line ">
-            <pre><span class="k">import </span>java.util.Set;</pre>
-          </td>
-        </tr>
-        <tr class="row pos3">
-          <td class="lid L67"><a name="L67" href="#L67">67</a></td>
-          <td class="line ">
-            <pre></pre>
-          </td>
-        </tr>
-        <tr class="row pos4">
-          <td class="lid L68"><a name="L68" href="#L68">68</a></td>
-          <td class="line ">
-            <pre><span class="a">@DependsUpon</span>(DotNetConstants.CORE_PLUGIN_EXECUTED)</pre>
-          </td>
-        </tr>
-        <tr class="row pos5">
-          <td class="lid L69"><a name="L69" href="#L69">69</a></td>
-          <td class="line ">
-            <pre><span class="a">@Phase</span>(name = Phase.Name.PRE)</pre>
-          </td>
-        </tr>
-        <tr class="row pos6">
-          <td class="lid L70"><a name="L70" href="#L70">70</a></td>
-          <td class="line ko">
-          <pre><span class="k">public </span><span class="k">final </span><span
-                  class="k">class </span><span class="sym-2954 sym">CSharpSquidSensor</span> <span
-                  class="k">extends </span>AbstractRegularDotNetSensor {</pre>
-          </td>
-        </tr>
-        <tr class="row pos7">
-          <td class="lid L71"><a name="L71" href="#L71">71</a></td>
-          <td class="line ">
-            <pre></pre>
-          </td>
-        </tr>
-        <tr class="row pos8">
-          <td class="lid L72"><a name="L72" href="#L72">72</a></td>
-          <td class="line ">
-          <pre>  <span class="k">private </span><span
-                  class="k">static </span><span
-                  class="k">final </span>Logger <span
-                  class="sym-3041 sym">LOG</span> = LoggerFactory.getLogger(<span
-                  class="sym-2954 sym">CSharpSquidSensor</span>.<span class="k">class</span>);</pre>
-          </td>
-        </tr>
-        <tr class="row pos9">
-          <td class="lid L73"><a name="L73" href="#L73">73</a></td>
-          <td class="line ">
-          <pre>  <span class="k">private </span><span
-                  class="k">static </span><span
-                  class="k">final </span>Number[] <span class="sym-3129 sym">METHOD_DISTRIB_BOTTOM_LIMITS</span> = {<span
-                  class="c">1</span>, <span class="c">2</span>, <span
-                  class="c">4</span>, <span class="c">6</span>, <span
-                  class="c">8</span>, <span class="c">10</span>, <span class="c">12</span>};</pre>
-          </td>
-        </tr>
-        <tr class="row pos10">
-          <td class="lid L74"><a name="L74" href="#L74">74</a></td>
-          <td class="line ">
-          <pre>  <span class="k">private </span><span
-                  class="k">static </span><span
-                  class="k">final </span>Number[] <span class="sym-3217 sym">FILES_DISTRIB_BOTTOM_LIMITS</span> = {<span
-                  class="c">0</span>, <span class="c">5</span>, <span
-                  class="c">10</span>, <span class="c">20</span>, <span class="c">30</span>, <span
-                  class="c">60</span>, <span class="c">90</span>};</pre>
-          </td>
-        </tr>
-        <tr class="row pos11">
-          <td class="lid L75"><a name="L75" href="#L75">75</a></td>
-          <td class="line ">
-          <pre>  <span class="k">private </span><span
-                  class="k">static </span><span
-                  class="k">final </span>String[] <span class="sym-3307 sym">SUPPORTED_LANGUAGES</span> = <span
-                  class="k">new </span>String[] {CSharpConstants.LANGUAGE_KEY};</pre>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <div class="navigator-content-footer">
-        <div>Comments:</div>
-      </div>
-    </div>
-
-    <div class="navigator-content-side">
-      <dl class="navigator-content-detail-list">
-        <dt>Technical debt</dt>
-        <dd class="with-details">12 minutes</dd>
-
-        <dt class="first">Severity</dt>
-        <dd class="first"><i class="icon-severity-major"></i> Major</dd>
-        <dt>Status</dt>
-        <dd><i class="icon-severity-minor"></i> Closed</dd>
-        <dt>Resolution</dt>
-        <dd><i class="icon-severity-info"></i> Resolved</dd>
-
-        <dt class="first">Author</dt>
-        <dd class="first">Dinesh Bolkensteyn</dd>
-        <dt>Assignee</dt>
-        <dd>Dinesh Bolkensteyn</dd>
-
-        <dt class="first">Created</dt>
-        <dd class="first">Jun 06 2013</dd>
-        <dt>Updated</dt>
-        <dd class="with-details">Jun 08 2013</dd>
-      </dl>
-    </div>
-  </div>
 </div>

@@ -273,16 +273,17 @@
 
 .navigator-result-list {
   position: fixed;
-  top: 67px; bottom: 0; left: 0;
+  top: 107px; bottom: 0; left: 0;
   width: 300px;
   border-right: 1px solid @grey;
+  .box-sizing(border-box);
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 .navigator-result {
   padding: 10px;
-  cursor: default;
+  cursor: pointer;
   .trans();
 
   &.active {
@@ -336,6 +337,31 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.navigator-results-status-bar {
+  position: fixed;
+  top: 67px; left: 0;
+  .clearfix;
+  .size(300px, 40px);
+  .box-sizing(border-box);
+  padding: 10px;
+  border-right: 1px solid @grey;
+  border-bottom: 1px solid @grey;
+  line-height: 20px;
+}
+
+.navigator-results-order {
+  float: left;
+  color: lighten(@baseFontColor, 10%);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.navigator-results-stat {
+  float: right;
+  color: lighten(@baseFontColor, 10%);
+  font-size: 11px;
 }
 
 .navigator-content {
