@@ -128,7 +128,7 @@
     $j('#footer').remove();
     $j('.navigator-result').on('click', function() {
       var key = $j(this).data('component-key'),
-          url = baseUrl + '/resource/index/' + key + '?metric=61&display_title=true';
+          url = baseUrl + '/resource/index/' + key + '?metric=violations&display_title=true';
 
       $j.ajax({
         type: 'GET',
