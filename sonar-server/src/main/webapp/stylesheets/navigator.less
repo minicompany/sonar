@@ -9,6 +9,39 @@
 
 }
 
+.navigator-header {
+  padding: 10px;
+  background: @grey;
+  font-size: 0;
+  border-bottom: 1px solid @darkGrey;
+}
+
+.navigator-header-title {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 24px;
+}
+
+.navigator-header-actions {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 30px;
+}
+
+.navigator-header-action {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 3px 9px;
+  border: 1px solid @darkGrey;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.navigator-header-action + .navigator-header-action {
+  border-left: none;
+}
+
+
 .navigator-filters {
   margin-bottom: 10px;
   border-bottom: 1px solid @darkGrey;
@@ -273,7 +306,7 @@
 
 .navigator-result-list {
   position: fixed;
-  top: 107px; bottom: 0; left: 0;
+  top: 157px; bottom: 0; left: 0;
   width: 300px;
   border-right: 1px solid @grey;
   .box-sizing(border-box);
@@ -341,7 +374,7 @@
 
 .navigator-results-status-bar {
   position: fixed;
-  top: 67px; left: 0;
+  top: 117px; left: 0;
   .clearfix;
   .size(300px, 40px);
   .box-sizing(border-box);
@@ -366,7 +399,7 @@
 
 .navigator-content {
   position: fixed;
-  top: 67px; bottom: 0; left: 310px; right: 0;
+  top: 117px; bottom: 0; left: 310px; right: 0;
   padding: 10px;
   overflow-x: hidden;
   overflow-y: auto;
