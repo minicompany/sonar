@@ -49,42 +49,38 @@ class NewRulesConfigurationController < ApplicationController
                       [message('rules.status.ready'), Rule::STATUS_READY]]
     @select_sort_by = [[message('rules_configuration.rule_name'), Rule::SORT_BY_RULE_NAME], [message('rules_configuration.creation_date'), Rule::SORT_BY_CREATION_DATE]]
 
-    begin
-      stop_watch = Internal.profiling.start("rules", "BASIC")
+    stop_watch = Internal.profiling.start("rules", "BASIC")
 
-      criteria = {
-      "profileId" => @profile.id.to_i, "activation" => @activation, "severities" => @priorities.to_java, "inheritance" => @inheritance, "statuses" => @status.to_java,
-      "repositoryKeys" => @repositories.to_java, "nameOrKey" => @searchtext, "include_parameters_and_notes" => true, "language" => @profile.language, "sort_by" => @sort_by}
+    criteria = {
+    "profileId" => @profile.id.to_i, "activation" => @activation, "severities" => @priorities, "inheritance" => @inheritance, "statuses" => @status,
+    "repositoryKeys" => @repositories, "nameOrKey" => @searchtext, "include_parameters_and_notes" => true, "language" => @profile.language, "sort_by" => @sort_by}
 
-      @rules = []
-      @pagination = Api::Pagination.new(params)
+    @rules = []
+    @pagination = Api::Pagination.new(params)
 
-      call_backend do
-        query = Java::OrgSonarServerRule::ProfileRuleQuery::parse(criteria.to_java)
-        paging = Java::OrgSonarServerQualityprofile::Paging.create(@pagination.per_page.to_i, @pagination.page.to_i)
+    call_backend do
+      query = Java::OrgSonarServerRule::ProfileRuleQuery::parse(criteria.to_java)
+      paging = Java::OrgSonarServerQualityprofile::Paging.create(@pagination.per_page.to_i, @pagination.page.to_i)
 
-        if @activation==STATUS_ACTIVE
-          result = Internal.quality_profiles.searchActiveRules(query, paging)
-        else
-          result = Internal.quality_profiles.searchInactiveRules(query, paging)
-        end
-
-        @rules = result.rules
-        @pagination.count = result.paging.total
-
-        unless @searchtext.blank?
-          if @activation==STATUS_ACTIVE
-            @hidden_inactives = Internal.quality_profiles.countInactiveRules(query)
-          else
-            @hidden_actives = Internal.quality_profiles.countInactiveRules(query)
-          end
-        end
+      if @activation==STATUS_ACTIVE
+        result = Internal.quality_profiles.searchActiveRules(query, paging)
+      else
+        result = Internal.quality_profiles.searchInactiveRules(query, paging)
       end
 
-      stop_watch.stop("found #{@rules.size} rules with criteria #{criteria.to_json}")
-    rescue
-      @rules = []
+      @rules = result.rules
+      @pagination.count = result.paging.total
+
+      unless @searchtext.blank?
+        if @activation==STATUS_ACTIVE
+          @hidden_inactives = Internal.quality_profiles.countInactiveRules(query)
+        else
+          @hidden_actives = Internal.quality_profiles.countActiveRules(query)
+        end
+      end
     end
+
+    stop_watch.stop("found #{@pagination.count} rules with criteria #{criteria.to_json}, displaying #{@pagination.per_page} items")
 
     @current_rules = @rules
   end
@@ -115,48 +111,28 @@ class NewRulesConfigurationController < ApplicationController
   #
   def activate_rule
     verify_post_request
-    access_denied unless has_role?(:profileadmin)
     require_parameters :id, :rule_id
-    profile = Profile.find(params[:id].to_i)
-    if profile
-      rule=Rule.first(:conditions => ["id = ? and status <> ?", params[:rule_id].to_i, Rule::STATUS_REMOVED])
-      priority=params[:level]
 
-      active_rule=profile.active_by_rule_id(rule.id)
-      if priority.blank?
+    result = nil
+    call_backend do
+      severity = params[:level]
+      if severity.blank?
         # deactivate the rule
-        if active_rule
-          java_facade.ruleDeactivated(profile.id, active_rule.id, current_user.name)
-          active_rule.destroy
-          active_rule=nil
-        end
+        result = Internal.quality_profiles.deactivateRule(params[:id].to_i, params[:rule_id].to_i)
       else
         # activate the rule
-        activated = false
-        if active_rule.nil?
-          active_rule = ActiveRule.new(:profile_id => profile.id, :rule => rule)
-          rule.parameters.select { |p| p.default_value.present? }.each do |p|
-            active_rule.active_rule_parameters.build(:rules_parameter => p, :value => p.default_value)
-          end
-          activated = true
-        end
-        old_severity = active_rule.failure_level
-        active_rule.failure_level=Sonar::RulePriority.id(priority)
-        active_rule.save!
-        if activated
-          java_facade.ruleActivated(profile.id, active_rule.id, current_user.name)
-        else
-          java_facade.ruleSeverityChanged(profile.id, active_rule.id, old_severity, active_rule.failure_level, current_user.name)
-        end
+        result = Internal.quality_profiles.activateRule(params[:id].to_i, params[:rule_id].to_i, severity)
       end
-      if active_rule
-        active_rule.reload
-      end
+    end
 
-      render :update do |page|
-        page.replace_html("rule_#{rule.id}", :partial => 'rule', :object => rule, :locals => {:profile => profile, :rule => rule, :active_rule => active_rule})
-        page.assign('localModifications', true)
-      end
+    # TODO replace it by QProfileRule
+    profile = Profile.find(params[:id].to_i)
+    rule = Rule.first(:conditions => ["id = ? and status <> ?", params[:rule_id].to_i, Rule::STATUS_REMOVED]) if profile
+    active_rule = ActiveRule.first(:conditions => ['id = ?', result.activeRule().getId()]) if result && result.activeRule()
+
+    render :update do |page|
+      page.replace_html("rule_#{rule.id}", :partial => 'rule', :object => rule, :locals => {:profile => profile, :rule => rule, :active_rule => active_rule})
+      page.assign('localModifications', true)
     end
   end
 

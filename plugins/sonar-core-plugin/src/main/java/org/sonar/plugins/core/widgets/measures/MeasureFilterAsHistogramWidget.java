@@ -17,27 +17,29 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.plugins.core.widgets;
+package org.sonar.plugins.core.widgets.measures;
 
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.web.*;
+import org.sonar.plugins.core.widgets.CoreWidget;
+import org.sonar.plugins.core.widgets.WidgetConstants;
 
 import static org.sonar.api.web.WidgetScope.GLOBAL;
 
-@WidgetCategory("Global")
+@WidgetCategory({"Filters", "Global"})
 @WidgetScope(GLOBAL)
 @WidgetProperties({
   @WidgetProperty(key = "chartTitle", type = WidgetPropertyType.STRING),
-  @WidgetProperty(key = "chartHeight", type = WidgetPropertyType.INTEGER, defaultValue = "300"),
   @WidgetProperty(key = "filter", type = WidgetPropertyType.FILTER, optional = false),
-  @WidgetProperty(key = "mainMetric", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.TECHNICAL_DEBT_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
-  @WidgetProperty(key = "extraMetric1", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.NCLOC_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
-  @WidgetProperty(key = "extraMetric2", type = WidgetPropertyType.METRIC, options = {WidgetConstants.FILTER_OUT_NEW_METRICS})
+  @WidgetProperty(key = "metric", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.TECHNICAL_DEBT_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
+  @WidgetProperty(key = "maxItems", type = WidgetPropertyType.INTEGER, defaultValue = "40"),
+  @WidgetProperty(key = "reverseOrder", type = WidgetPropertyType.BOOLEAN, defaultValue = "false"),
+  @WidgetProperty(key = "displayWorstBestValues", type = WidgetPropertyType.BOOLEAN, defaultValue = "false")
 })
-public class PieChartWidget extends CoreWidget {
+public class MeasureFilterAsHistogramWidget extends CoreWidget {
 
-  public PieChartWidget() {
-    super("pie_chart", "Pie Chart", "/org/sonar/plugins/core/widgets/pie_chart.html.erb");
+  public MeasureFilterAsHistogramWidget() {
+    super("measure_filter_histogram", "Measure Filter as Histogram", "/org/sonar/plugins/core/widgets/measures/measure_filter_histogram.html.erb");
   }
 
 }

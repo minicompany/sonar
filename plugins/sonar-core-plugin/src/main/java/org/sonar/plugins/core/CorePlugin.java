@@ -48,6 +48,10 @@ import org.sonar.plugins.core.timemachine.*;
 import org.sonar.plugins.core.web.TestsViewer;
 import org.sonar.plugins.core.widgets.*;
 import org.sonar.plugins.core.widgets.issues.*;
+import org.sonar.plugins.core.widgets.measures.MeasureFilterAsBubbleChartWidget;
+import org.sonar.plugins.core.widgets.measures.MeasureFilterAsCloudWidget;
+import org.sonar.plugins.core.widgets.measures.MeasureFilterAsHistogramWidget;
+import org.sonar.plugins.core.widgets.measures.MeasureFilterAsPieChartWidget;
 
 import java.util.Arrays;
 import java.util.List;
@@ -197,7 +201,16 @@ import java.util.List;
     name = "Enable file variation",
     global = false,
     defaultValue = "false",
-    category = CoreProperties.CATEGORY_GENERAL)
+    category = CoreProperties.CATEGORY_GENERAL),
+  @Property(
+    key = CoreProperties.CORE_AUTHENTICATOR_LOCAL_USERS,
+    name = "Local/technical users",
+    description = "Comma separated list of user logins that will always be authenticated using SonarQube database. When using the LDAP plugin, for these accounts, the user attributes (name, email, ...) are not re-synchronized",
+    project = false,
+    global = false,
+    defaultValue = "admin",
+    type = PropertyType.STRING,
+    multiValues = true)
 })
 public final class CorePlugin extends SonarPlugin {
 
@@ -238,9 +251,10 @@ public final class CorePlugin extends SonarPlugin {
       DocumentationCommentsWidget.class,
       DuplicationsWidget.class,
       TechnicalDebtPyramidWidget.class,
-      PieChartWidget.class,
-      CloudWidget.class,
-      HistogramWidget.class,
+      MeasureFilterAsPieChartWidget.class,
+      MeasureFilterAsCloudWidget.class,
+      MeasureFilterAsHistogramWidget.class,
+      MeasureFilterAsBubbleChartWidget.class,
 
       // dashboards
       ProjectDefaultDashboard.class,
@@ -390,7 +404,7 @@ public final class CorePlugin extends SonarPlugin {
         .type(PropertyType.BOOLEAN)
         .category(CoreProperties.CATEGORY_SECURITY)
         .build()
-    );
+      );
   }
 
 }

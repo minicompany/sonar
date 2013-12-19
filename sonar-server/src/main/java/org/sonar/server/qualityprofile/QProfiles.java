@@ -23,6 +23,8 @@ package org.sonar.server.qualityprofile;
 import com.google.common.base.Strings;
 import org.sonar.api.ServerComponent;
 import org.sonar.api.component.Component;
+import org.sonar.api.rules.Rule;
+import org.sonar.api.rules.RuleFinder;
 import org.sonar.core.component.ComponentDto;
 import org.sonar.core.qualityprofile.db.QualityProfileDao;
 import org.sonar.core.qualityprofile.db.QualityProfileDto;
@@ -43,6 +45,7 @@ public class QProfiles implements ServerComponent {
 
   private final QualityProfileDao qualityProfileDao;
   private final ResourceDao resourceDao;
+  private final RuleFinder ruleFinder;
 
   private final QProfileProjectService projectService;
 
@@ -50,10 +53,11 @@ public class QProfiles implements ServerComponent {
   private final QProfileOperations operations;
   private final ProfileRules rules;
 
-  public QProfiles(QualityProfileDao qualityProfileDao, ResourceDao resourceDao, QProfileProjectService projectService, QProfileSearch search,
+  public QProfiles(QualityProfileDao qualityProfileDao, ResourceDao resourceDao, RuleFinder ruleFinder, QProfileProjectService projectService, QProfileSearch search,
                    QProfileOperations operations, ProfileRules rules) {
     this.qualityProfileDao = qualityProfileDao;
     this.resourceDao = resourceDao;
+    this.ruleFinder = ruleFinder;
     this.projectService = projectService;
     this.search = search;
     this.operations = operations;
@@ -64,7 +68,7 @@ public class QProfiles implements ServerComponent {
   //
   // PROFILES
   //
-  // search profile from profile id
+  // startup synchronisation
   // delete profile from profile id (Delete alerts, activeRules, activeRuleParams, activeRuleNotes, Projects)
   // copy profile
   // export profile from profile id
@@ -79,8 +83,6 @@ public class QProfiles implements ServerComponent {
   // display changelog for a profile id
   //
   // ACTIVE RULES
-  // activate a rule
-  // deactivate a rule
   // update parameter on a active rule
   // add note on an active rule
   // delete note on an active rule
@@ -144,7 +146,7 @@ public class QProfiles implements ServerComponent {
   }
 
   public void addProject(int profileId, long projectId) {
-    ComponentDto project = (ComponentDto) findNotNull(projectId);
+    ComponentDto project = (ComponentDto) findProjectNotNull(projectId);
     QualityProfileDto qualityProfile = findNotNull(profileId);
 
     projectService.addProject(qualityProfile, project, UserSession.get());
@@ -152,14 +154,14 @@ public class QProfiles implements ServerComponent {
 
   public void removeProject(int profileId, long projectId) {
     QualityProfileDto qualityProfile = findNotNull(profileId);
-    ComponentDto project = (ComponentDto) findNotNull(projectId);
+    ComponentDto project = (ComponentDto) findProjectNotNull(projectId);
 
     projectService.removeProject(qualityProfile, project, UserSession.get());
   }
 
   public void removeProjectByLanguage(String language, long projectId) {
     Validation.checkMandatoryParameter(language, "language");
-    ComponentDto project = (ComponentDto) findNotNull(projectId);
+    ComponentDto project = (ComponentDto) findProjectNotNull(projectId);
 
     projectService.removeProject(language, project, UserSession.get());
   }
@@ -180,24 +182,41 @@ public class QProfiles implements ServerComponent {
     return rules.countActiveRules(query);
   }
 
-  public void searchInactiveRules(ProfileRuleQuery query, Paging paging) {
-    throw new UnsupportedOperationException();
+  public QProfileRuleResult searchInactiveRules(ProfileRuleQuery query, Paging paging) {
+    return rules.searchInactiveRules(query, paging);
   }
 
   public long countInactiveRules(ProfileRuleQuery query) {
     return rules.countInactiveRules(query);
   }
 
+  public RuleActivationResult activateRule(int profileId, int ruleId, String severity) {
+    QualityProfileDto qualityProfile = findNotNull(profileId);
+    Rule rule = findRuleNotNull(ruleId);
+    return operations.activateRule(qualityProfile, rule, severity, UserSession.get());
+  }
+
+  public RuleActivationResult deactivateRule(int profileId, int ruleId) {
+    QualityProfileDto qualityProfile = findNotNull(profileId);
+    Rule rule = findRuleNotNull(ruleId);
+    return operations.deactivateRule(qualityProfile, rule, UserSession.get());
+  }
+
+  //
+  // Quality profile validation
+  //
+
   private void validateNewProfile(String name, String language) {
-    validateName(name);
+    validateProfileName(name);
     Validation.checkMandatoryParameter(language, "language");
     checkNotAlreadyExists(name, language);
   }
 
   private QualityProfileDto validateRenameProfile(Integer profileId, String newName) {
-    validateName(newName);
+    validateProfileName(newName);
     QualityProfileDto profileDto = findNotNull(profileId);
     if (!profileDto.getName().equals(newName)) {
+      // TODO move this check to the service
       checkNotAlreadyExists(newName, profileDto.getLanguage());
     }
     return profileDto;
@@ -219,14 +238,6 @@ public class QProfiles implements ServerComponent {
     return checkNotNull(qualityProfile);
   }
 
-  private Component findNotNull(long projectId) {
-    Component component = resourceDao.findById(projectId);
-    if (component == null) {
-      throw new NotFoundException("This project does not exists.");
-    }
-    return component;
-  }
-
   private QualityProfileDto checkNotNull(QualityProfileDto qualityProfile) {
     if (qualityProfile == null) {
       throw new NotFoundException("This quality profile does not exists.");
@@ -244,10 +255,35 @@ public class QProfiles implements ServerComponent {
     return qualityProfileDao.selectById(id);
   }
 
-  private void validateName(String name) {
+  private void validateProfileName(String name) {
     if (Strings.isNullOrEmpty(name)) {
       throw BadRequestException.ofL10n("quality_profiles.please_type_profile_name");
     }
   }
+
+  //
+  // Project validation
+  //
+
+  private Component findProjectNotNull(long projectId) {
+    Component component = resourceDao.findById(projectId);
+    if (component == null) {
+      throw new NotFoundException("This project does not exists.");
+    }
+    return component;
+  }
+
+  //
+  // Rule validation
+  //
+
+  private Rule findRuleNotNull(int ruleId) {
+    Rule rule = ruleFinder.findById(ruleId);
+    if (rule == null) {
+      throw new NotFoundException("This rule does not exists.");
+    }
+    return rule;
+  }
+
 
 }

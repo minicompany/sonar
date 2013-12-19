@@ -17,27 +17,30 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.plugins.core.widgets;
+package org.sonar.plugins.core.widgets.measures;
 
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.web.*;
+import org.sonar.plugins.core.widgets.CoreWidget;
+import org.sonar.plugins.core.widgets.WidgetConstants;
 
 import static org.sonar.api.web.WidgetScope.GLOBAL;
 
-@WidgetCategory("Global")
+@WidgetCategory({"Filters", "Global"})
 @WidgetScope(GLOBAL)
 @WidgetProperties({
   @WidgetProperty(key = "chartTitle", type = WidgetPropertyType.STRING),
   @WidgetProperty(key = "chartHeight", type = WidgetPropertyType.INTEGER, defaultValue = "300"),
   @WidgetProperty(key = "filter", type = WidgetPropertyType.FILTER, optional = false),
-  @WidgetProperty(key = "colorMetric", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.TECHNICAL_DEBT_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
-  @WidgetProperty(key = "sizeMetric", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.COMPLEXITY_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
-  @WidgetProperty(key = "maxItems", type = WidgetPropertyType.INTEGER, defaultValue = "50")
+  @WidgetProperty(key = "mainMetric", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.TECHNICAL_DEBT_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
+  @WidgetProperty(key = "extraMetric1", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.NCLOC_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
+  @WidgetProperty(key = "extraMetric2", type = WidgetPropertyType.METRIC, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
+  @WidgetProperty(key = "maxItems", type = WidgetPropertyType.INTEGER, defaultValue = "20")
 })
-public class CloudWidget extends CoreWidget {
+public class MeasureFilterAsPieChartWidget extends CoreWidget {
 
-  public CloudWidget() {
-    super("cloud", "Cloud", "/org/sonar/plugins/core/widgets/cloud.html.erb");
+  public MeasureFilterAsPieChartWidget() {
+    super("measure_filter_pie_chart", "Measure Filter as Pie Chart", "/org/sonar/plugins/core/widgets/measures/measure_filter_pie_chart.html.erb");
   }
 
 }

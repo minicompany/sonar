@@ -17,25 +17,29 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.plugins.core.widgets;
 
-import org.sonar.api.measures.CoreMetrics;
-import org.sonar.api.web.*;
+package org.sonar.core.qualityprofile.db;
 
-import static org.sonar.api.web.WidgetScope.GLOBAL;
+import org.apache.ibatis.annotations.Param;
 
-@WidgetCategory("Global")
-@WidgetScope(GLOBAL)
-@WidgetProperties({
-  @WidgetProperty(key = "chartTitle", type = WidgetPropertyType.STRING),
-  @WidgetProperty(key = "filter", type = WidgetPropertyType.FILTER, optional = false),
-  @WidgetProperty(key = "metric", type = WidgetPropertyType.METRIC, defaultValue = CoreMetrics.TECHNICAL_DEBT_KEY, options = {WidgetConstants.FILTER_OUT_NEW_METRICS}),
-  @WidgetProperty(key = "maxItems", type = WidgetPropertyType.INTEGER, defaultValue = "40")
-})
-public class HistogramWidget extends CoreWidget {
+import javax.annotation.CheckForNull;
 
-  public HistogramWidget() {
-    super("histogram", "Histogram", "/org/sonar/plugins/core/widgets/histogram.html.erb");
-  }
+public interface ActiveRuleMapper {
+
+  @CheckForNull
+  ActiveRuleDto selectById(Integer id);
+
+  @CheckForNull
+  ActiveRuleDto selectByProfileAndRule(@Param("profileId") Integer profileId, @Param("ruleId") Integer ruleId);
+
+  void insert(ActiveRuleDto dto);
+
+  void update(ActiveRuleDto dto);
+
+  void insertParameter(ActiveRuleParamDto dto);
+
+  void delete(Integer activeRuleId);
+
+  void deleteParameters(Integer activeRuleId);
 
 }

@@ -17,7 +17,7 @@
       <td class="thin" nowrap><%= h language.getName() -%></td>
       <td>
         <form id="form-<%= language.getKey().parameterize -%>" method="POST" action="<%= ApplicationController.root_context -%>/project/set_profile">
-          <input type="hidden" name="id" value="<%= @project.id -%>"/>
+          <input type="hidden" name="id" value="<%= @project_id -%>"/>
           <input type="hidden" name="language" value="<%= language.getKey() -%>"/>
 
           <select id="select-profiles-<%= language.getKey().parameterize -%>" name="profile_id">
@@ -27,7 +27,7 @@
                  profiles = Api::Utils.insensitive_sort(@all_quality_profiles.select {|profile| profile.language == language.getKey()}) { |profile| profile.name }
                  profiles.each do |profile|
               %>
-                <option value="<%= profile.id -%>" <%= "selected='selected'" if selected_profile && selected_profile.id==profile.id -%>><%= h profile.name -%></option>
+                <option value="<%= profile.id -%>" <%= "selected='selected'" if selected_profile && (selected_profile.id == profile.id) -%>><%= h profile.name -%></option>
               <% end %>
             </optgroup>
           </select>

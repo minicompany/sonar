@@ -26,6 +26,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.sonar.api.rule.Severity;
+import org.sonar.api.rules.Rule;
+import org.sonar.api.rules.RuleFinder;
 import org.sonar.core.component.ComponentDto;
 import org.sonar.core.qualityprofile.db.QualityProfileDao;
 import org.sonar.core.qualityprofile.db.QualityProfileDto;
@@ -42,6 +45,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -53,6 +57,9 @@ public class QProfilesTest {
 
   @Mock
   ResourceDao resourceDao;
+
+  @Mock
+  RuleFinder ruleFinder;
 
   @Mock
   QProfileProjectService projectService;
@@ -70,7 +77,7 @@ public class QProfilesTest {
 
   @Before
   public void setUp() throws Exception {
-    qProfiles = new QProfiles(qualityProfileDao, resourceDao, projectService, search, service, rules);
+    qProfiles = new QProfiles(qualityProfileDao, resourceDao, ruleFinder, projectService, search, service, rules);
   }
 
   @Test
@@ -262,12 +269,57 @@ public class QProfilesTest {
     assertThat(qProfiles.searchActiveRules(query, paging)).isEqualTo(result);
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void testSearchInactiveRules() throws Exception {
     final int profileId = 42;
     ProfileRuleQuery query = ProfileRuleQuery.create(profileId);
     Paging paging = Paging.create(20, 1);
-    qProfiles.searchInactiveRules(query, paging);
+    QProfileRuleResult result = mock(QProfileRuleResult.class);
+    when(rules.searchInactiveRules(query, paging)).thenReturn(result);
+    assertThat(qProfiles.searchInactiveRules(query, paging)).isEqualTo(result);
+  }
+
+  @Test
+  public void activate_rule() throws Exception {
+    QualityProfileDto qualityProfile = new QualityProfileDto().setId(1).setName("My profile").setLanguage("java");
+    when(qualityProfileDao.selectById(1)).thenReturn(qualityProfile);
+    Rule rule = Rule.create().setRepositoryKey("squid").setKey("AvoidCycle");
+    rule.setId(10);
+    when(ruleFinder.findById(10)).thenReturn(rule);
+
+    qProfiles.activateRule(1, 10, Severity.BLOCKER);
+
+    verify(service).activateRule(eq(qualityProfile), eq(rule), eq(Severity.BLOCKER), any(UserSession.class));
+  }
+
+  @Test
+  public void fail_to_activate_rule_if_rule_not_found() throws Exception {
+    QualityProfileDto qualityProfile = new QualityProfileDto().setId(1).setName("My profile").setLanguage("java");
+    when(qualityProfileDao.selectById(1)).thenReturn(qualityProfile);
+    Rule rule = Rule.create().setRepositoryKey("squid").setKey("AvoidCycle");
+    rule.setId(10);
+    when(ruleFinder.findById(10)).thenReturn(null);
+
+    try {
+      qProfiles.activateRule(1, 10, Severity.BLOCKER);
+      fail();
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(NotFoundException.class);
+    }
+    verifyZeroInteractions(service);
+  }
+
+  @Test
+  public void deactivate_rule() throws Exception {
+    QualityProfileDto qualityProfile = new QualityProfileDto().setId(1).setName("My profile").setLanguage("java");
+    when(qualityProfileDao.selectById(1)).thenReturn(qualityProfile);
+    Rule rule = Rule.create().setRepositoryKey("squid").setKey("AvoidCycle");
+    rule.setId(10);
+    when(ruleFinder.findById(10)).thenReturn(rule);
+
+    qProfiles.deactivateRule(1, 10);
+
+    verify(service).deactivateRule(eq(qualityProfile), eq(rule), any(UserSession.class));
   }
 
 }
