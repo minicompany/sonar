@@ -363,19 +363,21 @@
   overflow-x: hidden;
   overflow-y: auto;
 }
+.navigator-content .code-issue-actions:before,
+.navigator-content .code-issue-actions:after {
+  display: table;
+  content: "";
+  line-height: 0;
+}
+.navigator-content .code-issue-actions:after {
+  clear: both;
+}
 .navigator-content-header {
   position: relative;
   margin-bottom: 12px;
   padding-right: 60px;
   padding-bottom: 12px;
   border-bottom: 1px solid #efefef;
-}
-.navigator-content-header .code-issue-actions {
-  margin-top: 12px;
-  padding-left: 0;
-  padding-right: 0;
-  border: none;
-  background: #fff;
 }
 .navigator-content-title {
   margin-bottom: 12px;
@@ -410,12 +412,15 @@
   box-sizing: border-box;
 }
 .navigator-content-detail-list {
+  display: inline-block;
+  vertical-align: top;
   font-size: 0;
+  width: 48%;
 }
 .navigator-content-detail-list dt,
 .navigator-content-detail-list dd {
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: top;
   margin-bottom: 4px;
   font-size: 13px;
 }
@@ -426,19 +431,22 @@
   border-top: 1px solid #efefef;
 }
 .navigator-content-detail-list dt {
-  width: 100px;
+  width: 40%;
 }
 .navigator-content-detail-list dt:after {
   content: ": ";
 }
 .navigator-content-detail-list dd {
-  width: 120px;
+  width: 60%;
 }
 .navigator-content-detail-list dd.with-details {
   cursor: pointer;
 }
 .navigator-content-detail-list dd.with-details:after {
   content: " ↓";
+}
+.navigator-content-detail-list + .navigator-content-detail-list {
+  margin-left: 3%;
 }
 .navigator-content-footer {
   margin-top: 12px;

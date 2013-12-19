@@ -4,85 +4,42 @@
       <a href="#" onclick="return openIssuePopup(this)" class="issue-permalink"><img src="<%= ApplicationController.root_context -%>/images/new-window-16.gif"></a>
     </div>
 
-    <img src="<%= ApplicationController.root_context -%>/images/priority/<%= issue.severity -%>.png" title="<%= h message("severity.#{issue.severity}") -%>">
-    &nbsp;
-    <a href="#" onclick="return toggleIssueRule(this)" class="rulename issue-rule-link"><%= h @issue_results.rule(issue).getName() -%></a>
-    &nbsp;
-    <% if issue.resolution %>
-      <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-      &nbsp;
-      <span><%= message("issue.resolution.#{issue.resolution}") -%></span>
-      &nbsp;
-    <% else %>
-      <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-      &nbsp;
-      <span><%= message("issue.status.#{issue.status}") -%></span>
-      &nbsp;
-    <% end %>
-    <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-    &nbsp;
-    <%= message('issue.updated') -%>&nbsp;<a href="#" onclick="return toggleIssueChangelog(this)" class="gray issue-changelog-link"
-       id="toggle-issue-changelog"><%= distance_of_time_in_words_to_now(Api::Utils.java_to_ruby_datetime(issue.updateDate())) -%></a>
-    &nbsp;
-    <% if issue.reporter %>
-      <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-      &nbsp;
-      <span><%= message('issue.reported_by') -%> <%= @issue_results.user(issue.reporter).name -%></span>
-      &nbsp;
-    <% end %>
-    <% if issue.authorLogin %>
-      <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-      &nbsp;
-     <span><%= message('issue.authorLogin') -%>&nbsp;<%= issue.authorLogin -%></span>
-      &nbsp;
-    <% end %>
-    <% if issue.technicalDebt %>
-      <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-      &nbsp;
-      <%= message('issue.technical_debt') -%>&nbsp;<a href="#" onclick="return toggleTechnicalDebt(this)" class="gray issue-technicaldebt-link"
-           id="toggle-issue-technicaldebt"><%= Internal.technical_debt.format(issue.technicalDebt) -%></a>
-        &nbsp;
-    <% end %>
+    <a href="#" onclick="return toggleIssueRule(this)" class="rulename issue-rule-link" style="font-size: 18px;line-height: 24px;text-decoration: none;"><%= h @issue_results.rule(issue).getName() -%></a>
+
+    <div style="color: #444;font-size: 14px;margin-top: 8px;line-height: 18px;"><%= Api::Utils.split_newlines(h(issue.message)).join('<br/>') -%></div>
   </div>
 
-  <div class="issue-rule rule-desc" style="display: none"></div>
-  <div class="issue-changelog" id="issue-changelog" style="display: none"></div>
-  <div class="issue-technicaldebt" id="issue-technicaldebt" style="display: none"></div>
+  <div class="code-issue-actions">
+    <div style="float: left; width: 60%">
+      <dl class="navigator-content-detail-list">
+        <dt>Technical debt</dt>
+        <dd>12 minutes<br>Reliability > Maintainability</dd>
 
-  <% unless issue.message.blank? %>
-    <div class="code-issue-msg">
-      <%= Api::Utils.split_newlines(h(issue.message)).join('<br/>') -%>
-    </div>
-  <% end %>
+        <dt class="first">Severity</dt>
+        <dd class="first"><i class="icon-severity-major"></i> Major<br>
+          <a href="#" onclick="return issueForm('severity', this)" class="link-action spacer-right"><%= message("issue.set_severity") -%></a></dd>
+        <dt>Status</dt>
+        <dd><i class="icon-severity-minor"></i> Closed</dd>
+        <dt>Resolution</dt>
+        <dd><i class="icon-severity-info"></i> Resolved</dd>
 
-  <%
-     issue.comments.each do |comment|
-       comment_html_id = "comment-#{comment.key}-#{rand(100)}"
-  %>
-    <div class="code-issue-comment" id="<%= comment_html_id -%>" data-comment-key="<%= comment.key -%>">
-      <h4>
-        <%= image_tag('reviews/comment.png') -%> &nbsp;<b><%= @issue_results.user(comment.userLogin()).name() -%></b>
-        (<%= distance_of_time_in_words_to_now(Api::Utils.java_to_ruby_datetime(comment.createdAt)) -%>)
-        <% if current_user && current_user.login==comment.userLogin %>
-          &nbsp;
-          <%= image_tag 'sep12.png' -%>
-          &nbsp;
-          <a class="link-action" href="#" onclick="return formEditIssueComment(this)"><%= message('edit') -%></a>
-          <a class="link-action spacer-right" href="#" onclick="return deleteIssueComment(this, '<%= escape_javascript(message('issue.comment.delete_confirm_message')) -%>')"><%= message('delete') -%></a>
-        <% end %>
-      </h4>
-      <%= Internal.text.markdownToHtml(comment.markdownText) -%>
-    </div>
-  <% end %>
-
-  <% if current_user %>
-
-    <div class="code-issue-actions">
-      <a href='#' onclick="return issueForm('comment', this)" class="link-action spacer-right" autofocus><%= message('issue.comment.formlink') -%></a>
-      <% unless issue.resolution %>
-        <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-        &nbsp;
+        <dt class="first">Action plan</dt>
+        <dd class="first">
         <span class="spacer-right">
+          <% if issue.actionPlanKey %>
+            <a href="#" onclick="return issueForm('plan', this)" class="link-action"><%= h(@issue_results.actionPlan(issue).name()) -%></a>
+          <% else %>
+            <a href="#" onclick="return issueForm('plan', this)" class="link-action"><%= message('issue.do_plan') -%></a>
+          <% end %>
+        </span></dd>
+      </dl>
+
+      <dl class="navigator-content-detail-list">
+        <dt class="first">Author</dt>
+        <dd class="first">Dinesh Bolkensteyn</dd>
+        <dt>Assignee</dt>
+        <dd>Dinesh Bolkensteyn<br>
+          <span class="spacer-right">
         <% if issue.assignee %>
           <a href='#' onclick="return issueForm('assign', this)" class="link-action"><%= message('assigned_to') -%></a> <%= h @issue_results.user(issue.assignee).name -%>
         <% else %>
@@ -92,75 +49,206 @@
             <% end %>
         <% end %>
         </span>
-        <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-        &nbsp;
-        <span class="spacer-right">
-          <% if issue.actionPlanKey %>
-            <a href="#" onclick="return issueForm('plan', this)" class="link-action"><%= message('issue.planned_for') -%></a> <%= h(@issue_results.actionPlan(issue).name()) -%>
-          <% else %>
-            <a href="#" onclick="return issueForm('plan', this)" class="link-action"><%= message('issue.do_plan') -%></a>
-          <% end %>
-        </span>
-      <% end %>
+        </dd>
 
-      <%
-         transitions = Internal.issues.listTransitions(issue).to_a
+        <dt class="first">Created</dt>
+        <dd class="first">Jun 06 2013</dd>
+        <dt>Updated</dt>
+        <dd class="with-details">Jun 08 2013</dd>
+      </dl>
 
-         # Display only the first transition
-         if !transitions.empty? && transitions.first
-           first_transition = transitions.first
-      %>
-        <img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>
-        &nbsp;
-        <a href="#" onclick="return doIssueTransition(this, '<%= first_transition.key -%>')" class="link-action spacer-right"><%= message("issue.transition.#{first_transition.key}") -%></a>
-      <% end %>
+      <div style="overflow: auto; max-height: 200px;border:1px solid #666;margin-top:10px;">
+        <div class="issue-rule rule-desc" style=""><div class="marginbottom10">
 
-      <%
-         plugin_actions = Internal.issues.listActions(issue)
-         shouldDisplayDropDown = transitions.size > 1 || !issue.resolution || !plugin_actions.empty?
-         if shouldDisplayDropDown
-      %>
-        <div class="dropdown">
-          <a href="#" class="link-action link-more" onclick="showDropdownMenuOnElement($j(this).next('.dropdown-menu')); return false;"><%= message('more_actions') -%></a>
-          <ul style="display: none" class="dropdown-menu">
-            <% if Java::OrgSonarServerUser::UserSession.get().hasProjectPermission('issueadmin', issue.projectKey) %>
-              <% unless issue.resolution %>
-                <li>
-                  <a href="#" onclick="return issueForm('severity', this)" class="link-action spacer-right"><%= message("issue.set_severity") -%></a>
-                </li>
-              <% end %>
-            <% end %>
+          <p>When handling a caught exception, two mandatory informations should be either logged, or present in a rethrown exception:</p>
 
-            <% # Display remaining transitions
-               if transitions.size > 1
-                 transitions[1..-1].each do |transition| %>
-              <li>
-                <a href="#" onclick="return doIssueTransition(this, '<%= transition.key -%>')" class="link-action spacer-right"><%= message("issue.transition.#{transition.key}") -%></a>
-              </li>
-            <%  end
-               end %>
-
-            <% # Display actions defined by plugins
-               plugin_actions.each do |action| %>
-              <li>
-                <a href="#" onclick="return doPluginIssueAction(this, '<%= action.key -%>')" class="link-action spacer-right"><%= message("issue.action.#{action.key}.formlink") -%></a>
-              </li>
-            <% end %>
+          <ul>
+            <li>Some context to ease the reproduction of the issue.</li>
+            <li>The original's exception, for its message and stack trace.</li>
           </ul>
+
+          <p>The following code snippet illustrates this rule:</p>
+
+<pre>try { /* ... */ } catch (Exception e) { LOGGER.info("context"); }         // Non-Compliant - exception is lost
+try { /* ... */ } catch (Exception e) { LOGGER.info(e); }                 // Non-Compliant - context is required
+try { /* ... */ } catch (Exception e) { LOGGER.info(e.getMessage()); }    // Non-Compliant - exception is lost (only message is preserved)
+
+try { /* ... */ } catch (Exception e) { LOGGER.info("context", e); }      // Compliant
+
+try {
+  /* ... */
+} catch (Exception e) {                                                   // Non-Compliant - exception is lost
+  throw new RuntimeException("context");
+}
+
+try {
+  /* ... */
+} catch (Exception e) {                                                   // Compliant
+  throw new RuntimeException("context", e);
+}
+</pre>
+
+          <p>
+            When all instances of a general exception must be handled, but some specific ones not, propagation must be used.
+            Propagation is allowed by this rule.
+          </p>
+
+          <p>
+            For example, the following code logs all <code>Exception</code> exceptions which are not <code>RuntimeException</code>.
+            All <code>RuntimeException</code> exceptions are propagated.
+          </p>
+
+<pre>try {
+  /* ... */
+} catch (RuntimeException e) {            // Compliant - propagation of the specific exception
+  throw e;
+} catch (Exception e) {                   // Compliant - catching of the general exception
+  LOGGER.error("...", e);
+}
+</pre>
+
+          <p>
+            Conversion of checked exceptions into unchecked exceptions to ease propagation of checked exceptions is also allowed by this rule.
+          </p>
+
+<pre>try {
+  /* ... */
+} catch (IOException e) {            // Compliant - propagation of checked exception by encapsulating it into an unchecked exception
+  throw new MyRuntimeException(e);
+}
+</pre>
+
         </div>
-      <% end %>
+
+          <div class="note">
+            squid&nbsp;<img alt="Sep12" src="/images/sep12.png?1387288206">&nbsp;
+            <a href="#" onclick="return openIssueRulePopup(this)">S1166</a>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="code-issue-form hidden"></div>
+
+    <div style="float: right; width: 35%; margin-left: 5%;">
+      <%
+      issue.comments.each do |comment|
+      comment_html_id = "comment-#{comment.key}-#{rand(100)}"
+      %>
+      <div class="code-issue-comment" id="<%= comment_html_id -%>" data-comment-key="<%= comment.key -%>">
+        <h4>
+          <%= image_tag('reviews/comment.png') -%> &nbsp;<b><%= @issue_results.user(comment.userLogin()).name() -%></b>
+          (<%= distance_of_time_in_words_to_now(Api::Utils.java_to_ruby_datetime(comment.createdAt)) -%>)
+          <% if current_user && current_user.login==comment.userLogin %>
+          &nbsp;
+          <%= image_tag 'sep12.png' -%>
+          &nbsp;
+          <a class="link-action" href="#" onclick="return formEditIssueComment(this)"><%= message('edit') -%></a>
+          <a class="link-action spacer-right" href="#" onclick="return deleteIssueComment(this, '<%= escape_javascript(message('issue.comment.delete_confirm_message')) -%>')"><%= message('delete') -%></a>
+          <% end %>
+        </h4>
+        <%= Internal.text.markdownToHtml(comment.markdownText) -%>
+      </div>
+      <% end %>
+      <textarea style="margin-top: 10px; width: 100%;" rows="3"></textarea>
+      <button>Comment</button><a href="#">Clear</a>
+    </div>
+  </div>
+
+  <% if current_user %>
+
+  <div class="code-issue-actions">
+    <%
+    transitions = Internal.issues.listTransitions(issue).to_a
+
+    # Display only the first transition
+    if !transitions.empty? && transitions.first
+    first_transition = transitions.first
+    %>
+    <a href="#" onclick="return doIssueTransition(this, '<%= first_transition.key -%>')" class="link-action spacer-right"><%= message("issue.transition.#{first_transition.key}") -%></a>
+    <% end %>
+
+    <%
+    plugin_actions = Internal.issues.listActions(issue)
+    shouldDisplayDropDown = transitions.size > 1 || !issue.resolution || !plugin_actions.empty?
+    if shouldDisplayDropDown
+    %>
+    <div class="dropdown">
+      <a href="#" class="link-action link-more" onclick="showDropdownMenuOnElement($j(this).next('.dropdown-menu')); return false;"><%= message('more_actions') -%></a>
+      <ul style="display: none" class="dropdown-menu">
+        <% if Java::OrgSonarServerUser::UserSession.get().hasProjectPermission('issueadmin', issue.projectKey) %>
+        <% unless issue.resolution %>
+        <li>
+          <a href="#" onclick="return issueForm('severity', this)" class="link-action spacer-right"><%= message("issue.set_severity") -%></a>
+        </li>
+        <% end %>
+        <% end %>
+
+        <% # Display remaining transitions
+        if transitions.size > 1
+        transitions[1..-1].each do |transition| %>
+        <li>
+          <a href="#" onclick="return doIssueTransition(this, '<%= transition.key -%>')" class="link-action spacer-right"><%= message("issue.transition.#{transition.key}") -%></a>
+        </li>
+        <%  end
+        end %>
+
+        <% # Display actions defined by plugins
+        plugin_actions.each do |action| %>
+        <li>
+          <a href="#" onclick="return doPluginIssueAction(this, '<%= action.key -%>')" class="link-action spacer-right"><%= message("issue.action.#{action.key}.formlink") -%></a>
+        </li>
+        <% end %>
+      </ul>
+    </div>
+    <% end %>
+  </div>
+  <div class="code-issue-form hidden"></div>
   <% elsif issue.assignee || issue.actionPlanKey %>
-    <div class="code-issue-actions">
-      <% if issue.assignee %>
-        <span class="gray"><%= message('assigned_to') -%> <%= h @issue_results.user(issue.assignee).name -%></span>
-        &nbsp;
-      <% end %>
-      <% if issue.actionPlanKey %>
-        <% if issue.assignee %><img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>&nbsp;<% end %>
-        <span class="gray"><%= message('issue.planned_for') -%> <%= h(@issue_results.actionPlan(issue).name()) -%></span>
-      <% end %>
-    </div>
+  <div class="code-issue-actions">
+    <% if issue.assignee %>
+    <span class="gray"><%= message('assigned_to') -%> <%= h @issue_results.user(issue.assignee).name -%></span>
+    &nbsp;
+    <% end %>
+    <% if issue.actionPlanKey %>
+    <% if issue.assignee %><img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>&nbsp;<% end %>
+    <span class="gray"><%= message('issue.planned_for') -%> <%= h(@issue_results.actionPlan(issue).name()) -%></span>
+    <% end %>
+  </div>
   <% end %>
+
+  <!--<% if issue.resolution %>-->
+  <!--<img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>-->
+  <!--&nbsp;-->
+  <!--<span><%= message("issue.resolution.#{issue.resolution}") -%></span>-->
+  <!--&nbsp;-->
+  <!--<% else %>-->
+  <!--<img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>-->
+  <!--&nbsp;-->
+  <!--<span><%= message("issue.status.#{issue.status}") -%></span>-->
+  <!--&nbsp;-->
+  <!--<% end %>-->
+  <!--<img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>-->
+  <!--&nbsp;-->
+  <!--<%= message('issue.updated') -%>&nbsp;<a href="#" onclick="return toggleIssueChangelog(this)" class="gray issue-changelog-link"-->
+                                           <!--id="toggle-issue-changelog"><%= distance_of_time_in_words_to_now(Api::Utils.java_to_ruby_datetime(issue.updateDate())) -%></a>-->
+  <!--&nbsp;-->
+  <!--<% if issue.reporter %>-->
+  <!--<img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>-->
+  <!--&nbsp;-->
+  <!--<span><%= message('issue.reported_by') -%> <%= @issue_results.user(issue.reporter).name -%></span>-->
+  <!--&nbsp;-->
+  <!--<% end %>-->
+  <!--<% if issue.authorLogin %>-->
+  <!--<img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>-->
+  <!--&nbsp;-->
+  <!--<span><%= message('issue.authorLogin') -%>&nbsp;<%= issue.authorLogin -%></span>-->
+  <!--&nbsp;-->
+  <!--<% end %>-->
+  <!--<% if issue.technicalDebt %>-->
+  <!--<img src="<%= ApplicationController.root_context -%>/images/sep12.png"/>-->
+  <!--&nbsp;-->
+  <!--<%= message('issue.technical_debt') -%>&nbsp;<a href="#" onclick="return toggleTechnicalDebt(this)" class="gray issue-technicaldebt-link"-->
+                                                  <!--id="toggle-issue-technicaldebt"><%= Internal.technical_debt.format(issue.technicalDebt) -%></a>-->
+  <!--&nbsp;-->
+  <!--<% end %>-->
+
 </div>
