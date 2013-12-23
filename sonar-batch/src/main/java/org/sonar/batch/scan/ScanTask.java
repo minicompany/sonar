@@ -23,7 +23,6 @@ import org.sonar.api.CoreProperties;
 import org.sonar.api.platform.ComponentContainer;
 import org.sonar.api.task.Task;
 import org.sonar.api.task.TaskDefinition;
-import org.sonar.batch.DefaultProfileLoader;
 import org.sonar.batch.DefaultProjectTree;
 import org.sonar.batch.bootstrap.TaskContainer;
 import org.sonar.batch.phases.Phases;
@@ -53,7 +52,6 @@ public class ScanTask implements Task {
         ProjectExclusions.class,
         ProjectReactorValidator.class,
         ProjectReactorReady.class,
-        DefaultProfileLoader.class,
         DefaultSensorMatcher.class);
     scanContainer.execute();
   }

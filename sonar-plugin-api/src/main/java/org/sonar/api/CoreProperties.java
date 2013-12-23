@@ -539,4 +539,6 @@ public interface CoreProperties {
    * @since 4.2
    */
   String CORE_AUTHENTICATOR_LOCAL_USERS = "sonar.security.localUsers";
+
+  String MULTI_LANGUAGE_KEY = "multi";
 }

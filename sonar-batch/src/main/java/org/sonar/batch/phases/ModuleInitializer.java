@@ -30,33 +30,30 @@ import org.sonar.core.resource.ResourceDto;
 /**
  * Should be dropped when org.sonar.api.resources.Project is fully refactored.
  */
-public class ProjectInitializer implements BatchComponent {
+public class ModuleInitializer implements BatchComponent {
 
   private ResourceDao resourceDao;
   private Languages languages;
 
-  public ProjectInitializer(ResourceDao resourceDao, Languages languages) {
+  public ModuleInitializer(ResourceDao resourceDao, Languages languages) {
     this.resourceDao = resourceDao;
     this.languages = languages;
   }
 
-  public void execute(Project project) {
-    if (project.getLanguage() == null) {
-      initLanguage(project);
-    }
-  }
-
-  private void initLanguage(Project project) {
-    Language language = languages.get(project.getLanguageKey());
-    if (language == null) {
-      throw new SonarException("Language with key '" + project.getLanguageKey() + "' not found");
-    }
-    project.setLanguage(language);
+  public void saveLanguageInDB(Project project) {
     if (project.getId() != null) {
       ResourceDto dto = resourceDao.getResource(project.getId());
       dto.setLanguage(project.getLanguageKey());
       resourceDao.insertOrUpdate(dto);
     }
+  }
 
+  public void initLanguage(Project module, String languageKey) {
+    module.getConfiguration().setProperty("sonar.language", languageKey);
+    Language language = languages.get(languageKey);
+    if (language == null) {
+      throw new SonarException("Language with key '" + languageKey + "' not found");
+    }
+    module.setLanguage(language);
   }
 }

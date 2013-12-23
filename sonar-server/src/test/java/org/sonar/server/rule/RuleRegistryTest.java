@@ -20,6 +20,8 @@
 
 package org.sonar.server.rule;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import com.github.tlrx.elasticsearch.test.EsSetup;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -33,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.config.Settings;
 import org.sonar.api.database.DatabaseSession;
-import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.rules.ActiveRule;
 import org.sonar.api.rules.ActiveRuleParam;
 import org.sonar.api.rules.Rule;
@@ -96,7 +97,7 @@ public class RuleRegistryTest {
       EsSetup.index("rules", "rule", "1").withSource(source1),
       EsSetup.index("rules", "rule", "2").withSource(source2),
       EsSetup.index("rules", "rule", "3").withSource(source3)
-    );
+      );
 
   }
 
@@ -241,15 +242,15 @@ public class RuleRegistryTest {
     when(rule.getId()).thenReturn(id);
     Rule refRule = Rule.create();
     refRule.setId(1);
-    when(rule.getRule()).thenReturn(refRule );
+    when(rule.getRule()).thenReturn(refRule);
     RulesProfile profile = mock(RulesProfile.class);
     when(profile.getId()).thenReturn(profileId);
-    when(rule.getRulesProfile()).thenReturn(profile );
+    when(rule.getRulesProfile()).thenReturn(profile);
     ActiveRuleParam param = mock(ActiveRuleParam.class);
     when(param.getKey()).thenReturn("string");
     when(param.getValue()).thenReturn("polop");
     List<ActiveRuleParam> params = ImmutableList.of(param);
-    when(rule.getActiveRuleParams()).thenReturn(params );
+    when(rule.getActiveRuleParams()).thenReturn(params);
     List<ActiveRule> rules = ImmutableList.of(rule);
 
     when(session.getResults(ActiveRule.class)).thenReturn(rules);
@@ -258,13 +259,13 @@ public class RuleRegistryTest {
 
     SearchHit[] parentHit = esSetup.client().prepareSearch("rules").setFilter(
       hasChildFilter("active_rule", termFilter("profileId", profileId))
-    ).execute().actionGet().getHits().getHits();
+      ).execute().actionGet().getHits().getHits();
     assertThat(parentHit).hasSize(1);
     assertThat(parentHit[0].getId()).isEqualTo("1");
 
     SearchHit[] childHit = esSetup.client().prepareSearch("rules").setFilter(
       hasParentFilter("rule", termFilter("key", "RuleWithParameters"))
-    ).execute().actionGet().getHits().getHits();
+      ).execute().actionGet().getHits().getHits();
     assertThat(childHit).hasSize(1);
     assertThat(childHit[0].getId()).isEqualTo("1");
   }
@@ -280,13 +281,13 @@ public class RuleRegistryTest {
 
     SearchHit[] parentHit = esSetup.client().prepareSearch("rules").setFilter(
       hasChildFilter("active_rule", termFilter("profileId", 10))
-    ).execute().actionGet().getHits().getHits();
+      ).execute().actionGet().getHits().getHits();
     assertThat(parentHit).hasSize(1);
     assertThat(parentHit[0].getId()).isEqualTo("1");
 
     SearchHit[] childHit = esSetup.client().prepareSearch("rules").setFilter(
       hasParentFilter("rule", termFilter("key", "RuleWithParameters"))
-    ).execute().actionGet().getHits().getHits();
+      ).execute().actionGet().getHits().getHits();
     assertThat(childHit).hasSize(1);
     assertThat(childHit[0].getId()).isEqualTo("1");
   }
@@ -301,13 +302,13 @@ public class RuleRegistryTest {
 
     SearchHit[] parentHit = esSetup.client().prepareSearch("rules").setFilter(
       hasChildFilter("active_rule", termFilter("profileId", 10))
-    ).execute().actionGet().getHits().getHits();
+      ).execute().actionGet().getHits().getHits();
     assertThat(parentHit).hasSize(1);
     assertThat(parentHit[0].getId()).isEqualTo("1");
 
     SearchHit[] childHit = esSetup.client().prepareSearch("rules").setFilter(
       hasParentFilter("rule", termFilter("key", "RuleWithParameters"))
-    ).execute().actionGet().getHits().getHits();
+      ).execute().actionGet().getHits().getHits();
     assertThat(childHit).hasSize(1);
     assertThat(childHit[0].getId()).isEqualTo("1");
   }

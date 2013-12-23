@@ -62,7 +62,7 @@ public final class AnnotationProfileParser implements ServerComponent {
         if (annotation.priority() != null) {
           priority = RulePriority.fromCheckPriority(annotation.priority());
         }
-        profile.activateRule(rule, priority);
+        ((RulesProfile) profile).activateRule(rule, priority);
       }
     }
   }

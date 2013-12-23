@@ -22,7 +22,6 @@ package org.sonar.api.profiles;
 import org.junit.Test;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.RulePriority;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -57,7 +56,7 @@ public class RulesProfileTest {
 
   @Test
   public void defaultVersionIs1() {
-    RulesProfile profile = RulesProfile.create();    
+    RulesProfile profile = RulesProfile.create();
     assertThat(profile.getVersion(), is(1));
   }
 }

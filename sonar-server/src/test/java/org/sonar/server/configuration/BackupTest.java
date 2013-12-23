@@ -19,7 +19,7 @@
  */
 package org.sonar.server.configuration;
 
-import org.sonar.core.preview.PreviewCache;
+import org.sonar.api.profiles.RulesProfile;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
@@ -38,6 +38,7 @@ import org.sonar.api.rules.ActiveRuleParam;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.RuleParam;
 import org.sonar.api.rules.RulePriority;
+import org.sonar.core.preview.PreviewCache;
 
 import java.io.IOException;
 import java.io.InputStream;

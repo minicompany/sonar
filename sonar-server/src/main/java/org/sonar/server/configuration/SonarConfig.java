@@ -19,11 +19,12 @@
  */
 package org.sonar.server.configuration;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.sonar.api.database.configuration.Property;
 import org.sonar.api.measures.Metric;
-import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.rules.Rule;
 
 import java.util.Collection;
@@ -103,12 +104,12 @@ public class SonarConfig {
   @Override
   public String toString() {
     return new ToStringBuilder(this)
-        .append("version", version)
-        .append("date", date)
-        .append("metrics", metrics)
-        .append("properties", properties)
-        .append("profiles", profiles)
-        .toString();
+      .append("version", version)
+      .append("date", date)
+      .append("metrics", metrics)
+      .append("properties", properties)
+      .append("profiles", profiles)
+      .toString();
   }
 
 }

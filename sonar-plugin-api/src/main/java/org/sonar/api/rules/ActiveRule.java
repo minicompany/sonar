@@ -19,13 +19,28 @@
  */
 package org.sonar.api.rules;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.sonar.api.profiles.RulesProfile;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,7 +73,7 @@ public class ActiveRule implements Cloneable {
   @JoinColumn(name = "profile_id", updatable = true, nullable = false)
   private RulesProfile rulesProfile;
 
-  @OneToMany(mappedBy = "activeRule", fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE })
+  @OneToMany(mappedBy = "activeRule", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
   private List<ActiveRuleParam> activeRuleParams = new ArrayList<ActiveRuleParam>();
 
   @Column(name = "inheritance", updatable = true, nullable = true)
@@ -309,7 +324,7 @@ public class ActiveRule implements Cloneable {
   @Override
   public String toString() {
     return new ToStringBuilder(this).append("id", getId()).append("rule", rule).append("priority", severity)
-        .append("params", activeRuleParams).toString();
+      .append("params", activeRuleParams).toString();
   }
 
   @Override
@@ -332,6 +347,6 @@ public class ActiveRule implements Cloneable {
    * @since 2.6
    */
   public boolean isEnabled() {
-    return getRule()!=null && getRule().isEnabled();
+    return getRule() != null && getRule().isEnabled();
   }
 }

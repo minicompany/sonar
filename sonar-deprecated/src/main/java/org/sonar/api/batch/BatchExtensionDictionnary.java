@@ -107,11 +107,7 @@ public class BatchExtensionDictionnary {
   }
 
   private boolean shouldKeep(Class type, Object extension, Project project) {
-    boolean keep = ClassUtils.isAssignable(extension.getClass(), type);
-    if (keep && project != null && ClassUtils.isAssignable(extension.getClass(), CheckProject.class)) {
-      keep = ((CheckProject) extension).shouldExecuteOnProject(project);
-    }
-    return keep;
+    return ClassUtils.isAssignable(extension.getClass(), type);
   }
 
   public <T> Collection<T> sort(Collection<T> extensions) {

@@ -19,6 +19,8 @@
  */
 package org.sonar.plugins.core.sensors;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.database.DatabaseSession;
@@ -46,10 +48,11 @@ public class ProfileSensor implements Sensor {
     Measure measure = new Measure(CoreMetrics.PROFILE, profile.getName());
     Measure measureVersion = new Measure(CoreMetrics.PROFILE_VERSION, Integer.valueOf(profile.getVersion()).doubleValue());
     if (profile.getId() != null) {
-      measure.setValue(profile.getId().doubleValue());
+      RulesProfile defaultRulesProfile = session.getEntity(RulesProfile.class, profile.getId());
+      measure.setValue(defaultRulesProfile.getId().doubleValue());
 
-      profile.setUsed(true);
-      session.merge(profile);
+      defaultRulesProfile.setUsed(true);
+      session.merge(defaultRulesProfile);
     }
     context.saveMeasure(measure);
     context.saveMeasure(measureVersion);

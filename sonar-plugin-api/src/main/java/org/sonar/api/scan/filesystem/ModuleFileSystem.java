@@ -20,8 +20,10 @@
 package org.sonar.api.scan.filesystem;
 
 import org.sonar.api.BatchComponent;
+import org.sonar.api.scan.filesystem.internal.InputFile;
 
 import javax.annotation.CheckForNull;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -68,8 +70,15 @@ public interface ModuleFileSystem extends BatchComponent {
 
   /**
    * Search for files. Never return null.
+   * @deprecated since 4.2 use {@link #inputFiles(FileQuery)}
    */
+  @Deprecated
   List<File> files(FileQuery query);
+
+  /**
+   * @since 4.0
+   */
+  Iterable<InputFile> inputFiles(FileQuery query);
 
   /**
    * Charset of source and test files. If it's not defined, then

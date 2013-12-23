@@ -26,9 +26,9 @@ import org.apache.commons.lang.StringUtils;
 import org.picocontainer.Startable;
 import org.sonar.api.BatchComponent;
 import org.sonar.api.resources.Language;
-import org.sonar.api.resources.Project;
 
 import javax.annotation.CheckForNull;
+
 import java.io.File;
 import java.util.Set;
 
@@ -37,7 +37,6 @@ import java.util.Set;
  */
 public class LanguageRecognizer implements BatchComponent, Startable {
 
-  private final Project project;
   private final Language[] languages;
 
   /**
@@ -45,36 +44,23 @@ public class LanguageRecognizer implements BatchComponent, Startable {
    */
   private SetMultimap<String, String> langsByExtension = HashMultimap.create();
 
-  /**
-   * Some plugins, like web and cobol, can analyze all the source files, whatever
-   * their file extension. This behavior is kept for backward-compatibility,
-   * but it should be fixed with future multi-language support.
-   */
-  private boolean ignoreFileExtension = false;
-
-  public LanguageRecognizer(Project project, Language[] languages) {
-    this.project = project;
+  public LanguageRecognizer(Language[] languages) {
     this.languages = languages;
   }
 
   /**
    * When no language plugin is installed
    */
-  public LanguageRecognizer(Project project) {
-    this(project, new Language[0]);
+  public LanguageRecognizer() {
+    this(new Language[0]);
   }
 
   @Override
   public void start() {
     for (Language language : languages) {
-      if (language.getFileSuffixes().length == 0 && language.getKey().equals(project.getLanguageKey())) {
-        ignoreFileExtension = true;
-
-      } else {
-        for (String suffix : language.getFileSuffixes()) {
-          String extension = sanitizeExtension(suffix);
-          langsByExtension.put(extension, language.getKey());
-        }
+      for (String suffix : language.getFileSuffixes()) {
+        String extension = sanitizeExtension(suffix);
+        langsByExtension.put(extension, language.getKey());
       }
     }
   }
@@ -86,13 +72,10 @@ public class LanguageRecognizer implements BatchComponent, Startable {
 
   @CheckForNull
   String of(File file) {
-    if (ignoreFileExtension) {
-      return project.getLanguageKey();
-    }
-    // multi-language is not supported yet. Filter on project language
     String extension = sanitizeExtension(FilenameUtils.getExtension(file.getName()));
     Set<String> langs = langsByExtension.get(extension);
-    return langs.contains(project.getLanguageKey()) ? project.getLanguageKey() : null;
+    // TODO Check conflict when several matches extension. For now return first language.
+    return langs.isEmpty() ? null : langs.iterator().next();
   }
 
   static String sanitizeExtension(String suffix) {

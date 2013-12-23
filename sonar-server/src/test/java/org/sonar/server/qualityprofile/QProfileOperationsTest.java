@@ -20,6 +20,8 @@
 
 package org.sonar.server.qualityprofile;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import org.apache.ibatis.session.SqlSession;
@@ -33,7 +35,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.sonar.api.profiles.ProfileExporter;
 import org.sonar.api.profiles.ProfileImporter;
-import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.rule.Severity;
 import org.sonar.api.rules.ActiveRule;
 import org.sonar.api.rules.Rule;
@@ -44,7 +45,11 @@ import org.sonar.core.persistence.MyBatis;
 import org.sonar.core.preview.PreviewCache;
 import org.sonar.core.properties.PropertiesDao;
 import org.sonar.core.properties.PropertyDto;
-import org.sonar.core.qualityprofile.db.*;
+import org.sonar.core.qualityprofile.db.ActiveRuleDao;
+import org.sonar.core.qualityprofile.db.ActiveRuleDto;
+import org.sonar.core.qualityprofile.db.ActiveRuleParamDto;
+import org.sonar.core.qualityprofile.db.QualityProfileDao;
+import org.sonar.core.qualityprofile.db.QualityProfileDto;
 import org.sonar.core.rule.RuleDao;
 import org.sonar.core.rule.RuleParamDto;
 import org.sonar.server.configuration.ProfilesManager;
@@ -63,8 +68,18 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollection;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QProfileOperationsTest {
@@ -127,7 +142,8 @@ public class QProfileOperationsTest {
 
   @Test
   public void create_profile() throws Exception {
-    NewProfileResult result = operations.newProfile("Default", "java", Maps.<String, String>newHashMap(), MockUserSession.create().setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
+    NewProfileResult result = operations.newProfile("Default", "java", Maps.<String, String>newHashMap(),
+      MockUserSession.create().setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
     assertThat(result.profile().name()).isEqualTo("Default");
     assertThat(result.profile().language()).isEqualTo("java");
 
@@ -248,7 +264,8 @@ public class QProfileOperationsTest {
     when(ruleDao.selectParameters(eq(10L), eq(session))).thenReturn(newArrayList(new RuleParamDto().setId(20).setName("max").setDefaultValue("10")));
     when(profileRules.getFromActiveRuleId(anyInt())).thenReturn(mock(QProfileRule.class));
 
-    RuleActivationResult result = operations.activateRule(qualityProfile, rule, Severity.CRITICAL, MockUserSession.create().setName("nicolas").setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
+    RuleActivationResult result = operations.activateRule(qualityProfile, rule, Severity.CRITICAL,
+      MockUserSession.create().setName("nicolas").setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
     assertThat(result.profile()).isNotNull();
     assertThat(result.rule()).isNotNull();
     assertThat(result.rule().activeRuleId()).isNotNull();
@@ -278,7 +295,8 @@ public class QProfileOperationsTest {
     when(activeRuleDao.selectByProfileAndRule(1, 10)).thenReturn(activeRule);
     when(profileRules.getFromActiveRuleId(anyInt())).thenReturn(mock(QProfileRule.class));
 
-    RuleActivationResult result = operations.activateRule(qualityProfile, rule, Severity.MAJOR, MockUserSession.create().setName("nicolas").setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
+    RuleActivationResult result = operations.activateRule(qualityProfile, rule, Severity.MAJOR,
+      MockUserSession.create().setName("nicolas").setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
     assertThat(result.profile()).isNotNull();
     assertThat(result.rule()).isNotNull();
     assertThat(result.rule().activeRuleId()).isNotNull();
@@ -298,7 +316,8 @@ public class QProfileOperationsTest {
     when(activeRuleDao.selectByProfileAndRule(1, 10)).thenReturn(activeRule);
     when(profileRules.getFromRuleId(anyInt())).thenReturn(mock(QProfileRule.class));
 
-    RuleActivationResult result = operations.deactivateRule(qualityProfile, rule, MockUserSession.create().setName("nicolas").setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
+    RuleActivationResult result = operations.deactivateRule(qualityProfile, rule,
+      MockUserSession.create().setName("nicolas").setGlobalPermissions(GlobalPermissions.QUALITY_PROFILE_ADMIN));
     assertThat(result.profile()).isNotNull();
     assertThat(result.rule()).isNotNull();
 

@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import org.sonar.api.scan.filesystem.internal.InputFile;
 
 import javax.annotation.Nullable;
+
 import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,6 +45,13 @@ public class FileQuery {
       query.on(InputFile.ATTRIBUTE_TYPE, type.name());
     }
     return query;
+  }
+
+  /**
+   * @since 4.2
+   */
+  public static FileQuery all() {
+    return on();
   }
 
   public static FileQuery onSource() {
@@ -115,4 +123,3 @@ public class FileQuery {
     throw new UnsupportedOperationException("TODO");
   }
 }
-

@@ -19,11 +19,11 @@
  */
 package org.sonar.server.configuration;
 
-import org.sonar.core.preview.PreviewCache;
+import org.sonar.api.profiles.RulesProfile;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sonar.api.profiles.RulesProfile;
+import org.sonar.core.preview.PreviewCache;
 import org.sonar.jpa.test.AbstractDbUnitTestCase;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;

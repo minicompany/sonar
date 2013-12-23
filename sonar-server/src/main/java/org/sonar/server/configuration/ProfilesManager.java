@@ -19,12 +19,18 @@
  */
 package org.sonar.server.configuration;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.sonar.api.database.DatabaseSession;
 import org.sonar.api.profiles.RulesProfile;
-import org.sonar.api.rules.*;
+import org.sonar.api.rules.ActiveRule;
+import org.sonar.api.rules.ActiveRuleChange;
+import org.sonar.api.rules.Rule;
+import org.sonar.api.rules.RuleParam;
+import org.sonar.api.rules.RulePriority;
 import org.sonar.api.utils.ValidationMessages;
 import org.sonar.core.preview.PreviewCache;
 import org.sonar.jpa.dao.BaseDao;
@@ -107,7 +113,7 @@ public class ProfilesManager extends BaseDao {
 
     for (ActiveRule activeRule : activeRules) {
       if (!activeRule.isInherited()) {
-        RulesProfile profile = activeRule.getRulesProfile();
+        RulesProfile profile = (RulesProfile) activeRule.getRulesProfile();
         incrementProfileVersionIfNeeded(profile);
         ruleDisabled(profile, activeRule, null);
         for (RulesProfile child : getChildren(profile.getId())) {
@@ -125,7 +131,6 @@ public class ProfilesManager extends BaseDao {
     getSession().commit();
     dryRunCache.reportGlobalModification();
   }
-
 
   /**
    * Rule was activated
@@ -387,7 +392,7 @@ public class ProfilesManager extends BaseDao {
 
   private void removeActiveRule(ActiveRule activeRule) {
     org.sonar.api.profiles.RulesProfile profile = activeRule.getRulesProfile();
-    profile.removeActiveRule(activeRule);
+    ((RulesProfile) profile).removeActiveRule(activeRule);
     getSession().removeWithoutFlush(activeRule);
   }
 

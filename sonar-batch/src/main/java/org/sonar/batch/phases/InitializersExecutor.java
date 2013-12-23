@@ -27,6 +27,7 @@ import org.sonar.api.batch.BatchExtensionDictionnary;
 import org.sonar.api.batch.Initializer;
 import org.sonar.api.batch.maven.DependsUponMavenPlugin;
 import org.sonar.api.batch.maven.MavenPluginHandler;
+import org.sonar.api.resources.ModuleLanguages;
 import org.sonar.api.resources.Project;
 import org.sonar.api.utils.TimeProfiler;
 import org.sonar.batch.events.EventBus;
@@ -42,33 +43,46 @@ public class InitializersExecutor {
   private MavenPluginExecutor mavenExecutor;
 
   private DefaultModuleFileSystem fs;
-  private Project project;
+  private Project module;
   private BatchExtensionDictionnary selector;
   private EventBus eventBus;
 
-  public InitializersExecutor(BatchExtensionDictionnary selector, Project project, DefaultModuleFileSystem fs, MavenPluginExecutor mavenExecutor, EventBus eventBus) {
+  private ModuleInitializer moduleInitializer;
+
+  private ModuleLanguages languages;
+
+  public InitializersExecutor(BatchExtensionDictionnary selector, Project module, DefaultModuleFileSystem fs, MavenPluginExecutor mavenExecutor, EventBus eventBus,
+    ModuleInitializer moduleInitializer, ModuleLanguages languages) {
     this.selector = selector;
     this.mavenExecutor = mavenExecutor;
-    this.project = project;
+    this.module = module;
     this.fs = fs;
     this.eventBus = eventBus;
+    this.moduleInitializer = moduleInitializer;
+    this.languages = languages;
   }
 
   public void execute() {
-    Collection<Initializer> initializers = selector.select(Initializer.class, project, true);
+    Collection<Initializer> initializers = selector.select(Initializer.class, module, true);
     eventBus.fireEvent(new InitializersPhaseEvent(Lists.newArrayList(initializers), true));
     if (LOG.isDebugEnabled()) {
       LOG.debug("Initializers : {}", StringUtils.join(initializers, " -> "));
     }
 
     for (Initializer initializer : initializers) {
-      eventBus.fireEvent(new InitializerExecutionEvent(initializer, true));
-      executeMavenPlugin(initializer);
+      for (String language : languages.getModuleLanguageKeys()) {
+        moduleInitializer.initLanguage(module, language);
+        if (initializer.shouldExecuteOnProject(module)) {
+          eventBus.fireEvent(new InitializerExecutionEvent(initializer, true));
+          executeMavenPlugin(initializer);
 
-      TimeProfiler profiler = new TimeProfiler(LOG).start("Initializer " + initializer);
-      initializer.execute(project);
-      profiler.stop();
-      eventBus.fireEvent(new InitializerExecutionEvent(initializer, false));
+          TimeProfiler profiler = new TimeProfiler(LOG).start("Initializer " + initializer);
+          initializer.execute(module);
+          profiler.stop();
+          eventBus.fireEvent(new InitializerExecutionEvent(initializer, false));
+          break;
+        }
+      }
     }
 
     if (!initializers.isEmpty()) {
@@ -80,10 +94,10 @@ public class InitializersExecutor {
 
   private void executeMavenPlugin(Initializer sensor) {
     if (sensor instanceof DependsUponMavenPlugin) {
-      MavenPluginHandler handler = ((DependsUponMavenPlugin) sensor).getMavenPluginHandler(project);
+      MavenPluginHandler handler = ((DependsUponMavenPlugin) sensor).getMavenPluginHandler(module);
       if (handler != null) {
         TimeProfiler profiler = new TimeProfiler(LOG).start("Execute maven plugin " + handler.getArtifactId());
-        mavenExecutor.execute(project, fs, handler);
+        mavenExecutor.execute(module, fs, handler);
         profiler.stop();
       }
     }

@@ -19,9 +19,10 @@
  */
 package org.sonar.server.configuration;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.sonar.api.profiles.RulesProfile;
 import org.sonar.jpa.test.AbstractDbUnitTestCase;
 
 import java.util.Arrays;

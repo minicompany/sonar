@@ -19,11 +19,11 @@
  */
 package org.sonar.jpa.dao;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.sonar.api.profiles.RulesProfile;
 import org.sonar.jpa.test.AbstractDbUnitTestCase;
-
 import static org.fest.assertions.Assertions.assertThat;
 
 public class ProfilesDaoTest extends AbstractDbUnitTestCase {

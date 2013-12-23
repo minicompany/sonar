@@ -69,7 +69,7 @@ public class DefaultProfileLoaderTest {
     settings.setProperty("sonar.profile.java", "legacy profile");
     when(dao.getProfile(Java.KEY, "legacy profile")).thenReturn(RulesProfile.create("legacy profile", "java"));
 
-    RulesProfile profile = new DefaultProfileLoader(dao).load(javaProject, settings);
+    RulesProfile profile = new DefaultProfileLoader(dao, Java.INSTANCE).load(javaProject, settings);
 
     assertThat(profile.getName()).isEqualTo("legacy profile");
   }
@@ -81,7 +81,7 @@ public class DefaultProfileLoaderTest {
 
     thrown.expect(SonarException.class);
     thrown.expectMessage("Quality profile not found : unknown, language java");
-    new DefaultProfileLoader(dao).load(javaProject, settings);
+    new DefaultProfileLoader(dao, Java.INSTANCE).load(javaProject, settings);
   }
 
   /**
@@ -93,7 +93,7 @@ public class DefaultProfileLoaderTest {
 
     thrown.expect(SonarException.class);
     thrown.expectMessage("You must install a plugin that supports the language key 'cobol'");
-    new DefaultProfileLoader(dao).load(cobolProject, new Settings());
+    new DefaultProfileLoader(dao).load(cobolProject, new Settings()).getId();
   }
 
   private Project newProject(String language) {

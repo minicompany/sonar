@@ -28,6 +28,7 @@ import org.sonar.api.batch.SensorContext;
 import org.sonar.api.batch.maven.DependsUponMavenPlugin;
 import org.sonar.api.batch.maven.MavenPluginHandler;
 import org.sonar.api.database.DatabaseSession;
+import org.sonar.api.resources.ModuleLanguages;
 import org.sonar.api.resources.Project;
 import org.sonar.api.utils.TimeProfiler;
 import org.sonar.batch.bootstrap.BatchExtensionDictionnary;
@@ -42,35 +43,49 @@ public class SensorsExecutor implements BatchComponent {
 
   private MavenPluginExecutor mavenExecutor;
   private EventBus eventBus;
-  private Project project;
+  private Project module;
   private DefaultModuleFileSystem fs;
   private BatchExtensionDictionnary selector;
   private final DatabaseSession session;
   private final SensorMatcher sensorMatcher;
 
-  public SensorsExecutor(BatchExtensionDictionnary selector, Project project, DefaultModuleFileSystem fs, MavenPluginExecutor mavenExecutor, EventBus eventBus,
-      DatabaseSession session, SensorMatcher sensorMatcher) {
+  private ModuleInitializer moduleInitializer;
+
+  private ModuleLanguages languages;
+
+  public SensorsExecutor(BatchExtensionDictionnary selector, Project module, DefaultModuleFileSystem fs, MavenPluginExecutor mavenExecutor, EventBus eventBus,
+    DatabaseSession session, SensorMatcher sensorMatcher,
+    ModuleInitializer moduleInitializer, ModuleLanguages languages) {
     this.selector = selector;
     this.mavenExecutor = mavenExecutor;
     this.eventBus = eventBus;
-    this.project = project;
+    this.module = module;
     this.fs = fs;
     this.session = session;
     this.sensorMatcher = sensorMatcher;
+    this.moduleInitializer = moduleInitializer;
+    this.languages = languages;
   }
 
   public void execute(SensorContext context) {
-    Collection<Sensor> sensors = selector.select(Sensor.class, project, true, sensorMatcher);
+    Collection<Sensor> sensors = selector.select(Sensor.class, module, true, sensorMatcher);
     eventBus.fireEvent(new SensorsPhaseEvent(Lists.newArrayList(sensors), true));
 
     for (Sensor sensor : sensors) {
-      // SONAR-2965 In case the sensor takes too much time we close the session to not face a timeout
-      session.commitAndClose();
 
-      eventBus.fireEvent(new SensorExecutionEvent(sensor, true));
-      executeMavenPlugin(sensor);
-      sensor.analyse(project, context);
-      eventBus.fireEvent(new SensorExecutionEvent(sensor, false));
+      for (String language : languages.getModuleLanguageKeys()) {
+        moduleInitializer.initLanguage(module, language);
+        if (sensor.shouldExecuteOnProject(module)) {
+          // SONAR-2965 In case the sensor takes too much time we close the session to not face a timeout
+          session.commitAndClose();
+
+          eventBus.fireEvent(new SensorExecutionEvent(sensor, true));
+          executeMavenPlugin(sensor);
+          sensor.analyse(module, context);
+          eventBus.fireEvent(new SensorExecutionEvent(sensor, false));
+          break;
+        }
+      }
     }
 
     eventBus.fireEvent(new SensorsPhaseEvent(Lists.newArrayList(sensors), false));
@@ -78,10 +93,10 @@ public class SensorsExecutor implements BatchComponent {
 
   private void executeMavenPlugin(Sensor sensor) {
     if (sensor instanceof DependsUponMavenPlugin) {
-      MavenPluginHandler handler = ((DependsUponMavenPlugin) sensor).getMavenPluginHandler(project);
+      MavenPluginHandler handler = ((DependsUponMavenPlugin) sensor).getMavenPluginHandler(module);
       if (handler != null) {
         TimeProfiler profiler = new TimeProfiler(LOG).start("Execute maven plugin " + handler.getArtifactId());
-        mavenExecutor.execute(project, fs, handler);
+        mavenExecutor.execute(module, fs, handler);
         profiler.stop();
       }
     }

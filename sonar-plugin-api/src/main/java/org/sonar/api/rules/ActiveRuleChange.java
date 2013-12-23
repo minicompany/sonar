@@ -19,14 +19,24 @@
  */
 package org.sonar.api.rules;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.sonar.api.database.BaseIdentifiable;
-import org.sonar.api.profiles.RulesProfile;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,7 +45,7 @@ import java.util.List;
 
 /**
  * A class to map a RuleChange to the hibernate model
- * 
+ *
  * @since 2.9
  */
 @Entity
@@ -75,7 +85,7 @@ public class ActiveRuleChange extends BaseIdentifiable {
   @Enumerated(EnumType.ORDINAL)
   private RulePriority newSeverity;
 
-  @OneToMany(mappedBy = "activeRuleChange", fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE })
+  @OneToMany(mappedBy = "activeRuleChange", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
   private List<ActiveRuleParamChange> activeRuleParamChanges = new ArrayList<ActiveRuleParamChange>();
 
   public ActiveRuleChange(String userName, RulesProfile profile, Rule rule) {
@@ -169,26 +179,26 @@ public class ActiveRuleChange extends BaseIdentifiable {
     }
     ActiveRuleChange rhs = (ActiveRuleChange) obj;
     return new EqualsBuilder()
-        .appendSuper(super.equals(obj))
-        .append(userName, rhs.userName)
-        .append(rulesProfile, rhs.rulesProfile)
-        .append(rule, rhs.rule)
-        .append(date, rhs.date)
-        .append(enabled, rhs.enabled)
-        .append(newSeverity, rhs.newSeverity)
-        .isEquals();
+      .appendSuper(super.equals(obj))
+      .append(userName, rhs.userName)
+      .append(rulesProfile, rhs.rulesProfile)
+      .append(rule, rhs.rule)
+      .append(date, rhs.date)
+      .append(enabled, rhs.enabled)
+      .append(newSeverity, rhs.newSeverity)
+      .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(41, 33)
-        .append(userName)
-        .append(rulesProfile)
-        .append(rule)
-        .append(date)
-        .append(enabled)
-        .append(newSeverity)
-        .toHashCode();
+      .append(userName)
+      .append(rulesProfile)
+      .append(rule)
+      .append(date)
+      .append(enabled)
+      .append(newSeverity)
+      .toHashCode();
   }
 
   @Override

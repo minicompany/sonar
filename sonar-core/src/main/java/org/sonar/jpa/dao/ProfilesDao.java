@@ -19,8 +19,9 @@
  */
 package org.sonar.jpa.dao;
 
-import org.sonar.api.database.DatabaseSession;
 import org.sonar.api.profiles.RulesProfile;
+
+import org.sonar.api.database.DatabaseSession;
 
 public class ProfilesDao extends BaseDao {
 

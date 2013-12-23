@@ -24,10 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.config.Settings;
 import org.sonar.api.profiles.RulesProfile;
+import org.sonar.api.resources.Language;
 import org.sonar.api.resources.Project;
 import org.sonar.api.rules.ActiveRule;
 import org.sonar.api.utils.SonarException;
 import org.sonar.jpa.dao.ProfilesDao;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefaultProfileLoader implements ProfileLoader {
 
@@ -35,34 +39,37 @@ public class DefaultProfileLoader implements ProfileLoader {
 
   private ProfilesDao dao;
 
-  public DefaultProfileLoader(ProfilesDao dao) {
+  private Language[] languages;
+
+  public DefaultProfileLoader(ProfilesDao dao, Language... languages) {
     this.dao = dao;
+    this.languages = languages;
   }
 
   public RulesProfile load(Project project, Settings settings) {
+    Map<String, RulesProfile> profilesPerLanguageKey = new HashMap<String, RulesProfile>();
 
-    String profileName = StringUtils.defaultIfBlank(
+    for (Language language : languages) {
+      String languageKey = language.getKey();
+
+      String profileName = StringUtils.defaultIfBlank(
         settings.getString("sonar.profile"),
-        settings.getString("sonar.profile." + project.getLanguageKey()));
+        settings.getString("sonar.profile." + languageKey));
 
-    if (StringUtils.isBlank(profileName)) {
-      // This means that the current language is not supported by any installed plugin, otherwise at least a
-      // "Default <Language Name>" profile would have been created by ActivateDefaultProfiles class.
-      String msg = "You must install a plugin that supports the language key '" + project.getLanguageKey() + "'.";
-      if (!LOG.isDebugEnabled()) {
-        msg += " Run analysis in verbose mode to see list of available language keys.";
-      } else {
-        msg += " See analysis log for a list of available language keys.";
+      RulesProfile profile = dao.getProfile(languageKey, profileName);
+      if (profile == null) {
+        throw new SonarException("Quality profile not found : " + profileName + ", language " + languageKey);
       }
-      throw new SonarException(msg);
+
+      profilesPerLanguageKey.put(languageKey, hibernateHack(profile));
+
     }
 
-    RulesProfile profile = dao.getProfile(project.getLanguageKey(), profileName);
-    if (profile == null) {
-      throw new SonarException("Quality profile not found : " + profileName + ", language " + project.getLanguageKey());
+    RulesProfile profile = new RulesProfileWrapper(project, profilesPerLanguageKey);
+    for (Map.Entry<String, RulesProfile> profiles : profilesPerLanguageKey.entrySet()) {
+      LOG.info("Quality profile for {}: {}", profiles.getKey(), profiles.getValue());
     }
-
-    return hibernateHack(profile);
+    return profile;
   }
 
   private RulesProfile hibernateHack(RulesProfile profile) {

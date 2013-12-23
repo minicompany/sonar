@@ -19,14 +19,14 @@
  */
 package org.sonar.batch.phases;
 
-import org.sonar.core.measure.MeasurementFilters;
-
 import com.google.common.collect.Lists;
 import org.sonar.api.BatchComponent;
+import org.sonar.api.CoreProperties;
 import org.sonar.api.batch.BatchExtensionDictionnary;
 import org.sonar.api.batch.Decorator;
 import org.sonar.api.batch.DecoratorContext;
 import org.sonar.api.batch.SonarIndex;
+import org.sonar.api.resources.ModuleLanguages;
 import org.sonar.api.resources.Project;
 import org.sonar.api.resources.Resource;
 import org.sonar.api.utils.MessageException;
@@ -34,6 +34,7 @@ import org.sonar.api.utils.SonarException;
 import org.sonar.batch.DecoratorsSelector;
 import org.sonar.batch.DefaultDecoratorContext;
 import org.sonar.batch.events.EventBus;
+import org.sonar.core.measure.MeasurementFilters;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,22 +44,27 @@ public class DecoratorsExecutor implements BatchComponent {
   private DecoratorsSelector decoratorsSelector;
   private SonarIndex index;
   private EventBus eventBus;
-  private Project project;
+  private Project module;
   private MeasurementFilters measurementFilters;
+  private ModuleInitializer moduleInitializer;
+  private ModuleLanguages languages;
 
   public DecoratorsExecutor(BatchExtensionDictionnary batchExtDictionnary,
-      Project project, SonarIndex index, EventBus eventBus, MeasurementFilters measurementFilters) {
+    Project module, SonarIndex index, EventBus eventBus, MeasurementFilters measurementFilters,
+    ModuleInitializer moduleInitializer, ModuleLanguages languages) {
+    this.moduleInitializer = moduleInitializer;
+    this.languages = languages;
     this.decoratorsSelector = new DecoratorsSelector(batchExtDictionnary);
     this.index = index;
     this.eventBus = eventBus;
-    this.project = project;
+    this.module = module;
     this.measurementFilters = measurementFilters;
   }
 
   public void execute() {
-    Collection<Decorator> decorators = decoratorsSelector.select(project);
+    Collection<Decorator> decorators = decoratorsSelector.select(module);
     eventBus.fireEvent(new DecoratorsPhaseEvent(Lists.newArrayList(decorators), true));
-    decorateResource(project, decorators, true);
+    decorateResource(module, decorators, true);
     eventBus.fireEvent(new DecoratorsPhaseEvent(Lists.newArrayList(decorators), false));
   }
 
@@ -73,7 +79,21 @@ public class DecoratorsExecutor implements BatchComponent {
     DefaultDecoratorContext context = new DefaultDecoratorContext(resource, index, childrenContexts, measurementFilters);
     if (executeDecorators) {
       for (Decorator decorator : decorators) {
-        executeDecorator(decorator, context, resource);
+        if (languages.isMultilanguage() &&
+          (resource.getLanguage() == null || CoreProperties.MULTI_LANGUAGE_KEY.equals(resource.getLanguage().getKey()))) {
+          for (String language : languages.getModuleLanguageKeys()) {
+            moduleInitializer.initLanguage(module, language);
+            if (decorator.shouldExecuteOnProject(module)) {
+              executeDecorator(decorator, context, resource);
+              break;
+            }
+          }
+        } else {
+          moduleInitializer.initLanguage(module, languages.isMultilanguage() ? resource.getLanguage().getKey() : languages.getOriginalLanguageKey());
+          if (decorator.shouldExecuteOnProject(module)) {
+            executeDecorator(decorator, context, resource);
+          }
+        }
       }
     }
     return context;

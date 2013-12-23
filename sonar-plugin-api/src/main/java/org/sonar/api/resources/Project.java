@@ -178,7 +178,7 @@ public class Project extends Resource implements Component {
   }
 
   public Project getRoot() {
-    return parent==null ? this : parent.getRoot();
+    return parent == null ? this : parent.getRoot();
   }
 
   /**
@@ -227,13 +227,18 @@ public class Project extends Resource implements Component {
   }
 
   /**
-   * @return the project language
+   * @deprecated There is no more only one language per project. Use {@link ModuleLanguages} instead.
    */
+  @Deprecated
   @Override
   public Language getLanguage() {
     return language;
   }
 
+  /**
+    * @deprecated There is no more only one language per project. Use {@link ModuleLanguages} instead.
+    */
+  @Deprecated
   public Project setLanguage(Language language) {
     this.language = language;
     return this;
@@ -241,7 +246,9 @@ public class Project extends Resource implements Component {
 
   /**
    * @return the language key
+   * @deprecated There is no more only one language per project. Use {@link ModuleLanguages} instead.
    */
+  @Deprecated
   public String getLanguageKey() {
     return configuration.getString("sonar.language", Java.KEY);
   }
@@ -321,7 +328,7 @@ public class Project extends Resource implements Component {
    */
   @Deprecated
   public boolean getReuseExistingRulesConfig() {
-    return configuration!=null && configuration.getBoolean(CoreProperties.REUSE_RULES_CONFIGURATION_PROPERTY, false);
+    return configuration != null && configuration.getBoolean(CoreProperties.REUSE_RULES_CONFIGURATION_PROPERTY, false);
   }
 
   /**
@@ -346,7 +353,7 @@ public class Project extends Resource implements Component {
    */
   @Deprecated
   public String[] getExclusionPatterns() {
-    return trimExclusions(ImmutableList.<String> builder()
+    return trimExclusions(ImmutableList.<String>builder()
       .add(configuration.getStringArray(CoreProperties.PROJECT_EXCLUSIONS_PROPERTY))
       .add(configuration.getStringArray(CoreProperties.GLOBAL_EXCLUSIONS_PROPERTY)).build());
   }
@@ -365,9 +372,9 @@ public class Project extends Resource implements Component {
       globalTestExclusions = new String[] {CoreProperties.GLOBAL_TEST_EXCLUSIONS_DEFAULT};
     }
 
-    return trimExclusions(ImmutableList.<String> builder()
-        .add(configuration.getStringArray(CoreProperties.PROJECT_TEST_EXCLUSIONS_PROPERTY))
-        .add(globalTestExclusions).build());
+    return trimExclusions(ImmutableList.<String>builder()
+      .add(configuration.getStringArray(CoreProperties.PROJECT_TEST_EXCLUSIONS_PROPERTY))
+      .add(globalTestExclusions).build());
   }
 
   // http://jira.codehaus.org/browse/SONAR-2261 - exclusion must be trimmed
@@ -466,10 +473,10 @@ public class Project extends Resource implements Component {
   @Override
   public String toString() {
     return new ToStringBuilder(this)
-        .append("id", getId())
-        .append("key", getKey())
-        .append("qualifier", getQualifier())
-        .toString();
+      .append("id", getId())
+      .append("key", getKey())
+      .append("qualifier", getQualifier())
+      .toString();
   }
 
   @Override

@@ -19,6 +19,8 @@
  */
 package org.sonar.server.startup;
 
+import org.sonar.api.profiles.RulesProfile;
+
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -30,7 +32,11 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.database.DatabaseSession;
 import org.sonar.api.profiles.ProfileDefinition;
 import org.sonar.api.profiles.RulesProfile;
-import org.sonar.api.rules.*;
+import org.sonar.api.rules.ActiveRule;
+import org.sonar.api.rules.Rule;
+import org.sonar.api.rules.RuleFinder;
+import org.sonar.api.rules.RuleParam;
+import org.sonar.api.rules.RuleQuery;
 import org.sonar.api.utils.SonarException;
 import org.sonar.api.utils.TimeProfiler;
 import org.sonar.api.utils.ValidationMessages;
@@ -40,7 +46,11 @@ import org.sonar.jpa.session.DatabaseSessionFactory;
 import org.sonar.server.platform.PersistentSettings;
 import org.sonar.server.rule.RuleRegistry;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class RegisterNewProfiles {
 
@@ -56,12 +66,12 @@ public class RegisterNewProfiles {
   private DatabaseSession session = null;
 
   public RegisterNewProfiles(List<ProfileDefinition> definitions,
-                             PersistentSettings settings,
-                             RuleFinder ruleFinder,
-                             RuleRegistry ruleRegistry,
-                             LoadedTemplateDao loadedTemplateDao,
-                             DatabaseSessionFactory sessionFactory,
-                             RegisterRules registerRulesBefore) {
+    PersistentSettings settings,
+    RuleFinder ruleFinder,
+    RuleRegistry ruleRegistry,
+    LoadedTemplateDao loadedTemplateDao,
+    DatabaseSessionFactory sessionFactory,
+    RegisterRules registerRulesBefore) {
     this.settings = settings;
     this.ruleFinder = ruleFinder;
     this.ruleRegistry = ruleRegistry;
@@ -71,11 +81,11 @@ public class RegisterNewProfiles {
   }
 
   public RegisterNewProfiles(PersistentSettings settings,
-                             RuleFinder ruleFinder,
-                             RuleRegistry ruleRegistry,
-                             LoadedTemplateDao loadedTemplateDao,
-                             DatabaseSessionFactory sessionFactory,
-                             RegisterRules registerRulesBefore) {
+    RuleFinder ruleFinder,
+    RuleRegistry ruleRegistry,
+    LoadedTemplateDao loadedTemplateDao,
+    DatabaseSessionFactory sessionFactory,
+    RegisterRules registerRulesBefore) {
     this(Collections.<ProfileDefinition>emptyList(), settings, ruleFinder, ruleRegistry, loadedTemplateDao, sessionFactory, registerRulesBefore);
   }
 
@@ -134,7 +144,6 @@ public class RegisterNewProfiles {
     insert(language, name, profiles);
     loadedTemplateDao.insert(new LoadedTemplateDto(templateKey(language, name), LoadedTemplateDto.QUALITY_PROFILE_TYPE));
   }
-
 
   private void verifyLanguage(String language, List<RulesProfile> profiles) {
     if (profiles.isEmpty()) {

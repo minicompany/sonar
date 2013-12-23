@@ -58,9 +58,6 @@ public class BatchExtensionDictionnary extends org.sonar.api.batch.BatchExtensio
 
   private boolean shouldKeep(Class type, Object extension, Project project, ExtensionMatcher matcher) {
     boolean keep = ClassUtils.isAssignable(extension.getClass(), type) && (matcher == null || matcher.accept(extension));
-    if (keep && project != null && ClassUtils.isAssignable(extension.getClass(), CheckProject.class)) {
-      keep = ((CheckProject) extension).shouldExecuteOnProject(project);
-    }
-    return keep;
+    return keep && project != null && ClassUtils.isAssignable(extension.getClass(), CheckProject.class);
   }
 }
