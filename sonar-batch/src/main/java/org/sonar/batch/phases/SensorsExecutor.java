@@ -28,14 +28,19 @@ import org.sonar.api.batch.SensorContext;
 import org.sonar.api.batch.maven.DependsUponMavenPlugin;
 import org.sonar.api.batch.maven.MavenPluginHandler;
 import org.sonar.api.database.DatabaseSession;
+import org.sonar.api.resources.Java;
+import org.sonar.api.resources.JavaFile;
+import org.sonar.api.resources.Languages;
 import org.sonar.api.resources.ModuleLanguages;
 import org.sonar.api.resources.Project;
+import org.sonar.api.scan.filesystem.FileQuery;
 import org.sonar.api.utils.TimeProfiler;
 import org.sonar.batch.bootstrap.BatchExtensionDictionnary;
 import org.sonar.batch.events.EventBus;
 import org.sonar.batch.scan.filesystem.DefaultModuleFileSystem;
 import org.sonar.batch.scan.maven.MavenPluginExecutor;
 
+import java.io.File;
 import java.util.Collection;
 
 public class SensorsExecutor implements BatchComponent {
@@ -51,11 +56,13 @@ public class SensorsExecutor implements BatchComponent {
 
   private ModuleInitializer moduleInitializer;
 
-  private ModuleLanguages languages;
+  private ModuleLanguages moduleLanguages;
+
+  private Languages languages;
 
   public SensorsExecutor(BatchExtensionDictionnary selector, Project module, DefaultModuleFileSystem fs, MavenPluginExecutor mavenExecutor, EventBus eventBus,
     DatabaseSession session, SensorMatcher sensorMatcher,
-    ModuleInitializer moduleInitializer, ModuleLanguages languages) {
+    ModuleInitializer moduleInitializer, ModuleLanguages moduleLanguages, Languages languages) {
     this.selector = selector;
     this.mavenExecutor = mavenExecutor;
     this.eventBus = eventBus;
@@ -64,16 +71,40 @@ public class SensorsExecutor implements BatchComponent {
     this.session = session;
     this.sensorMatcher = sensorMatcher;
     this.moduleInitializer = moduleInitializer;
+    this.moduleLanguages = moduleLanguages;
     this.languages = languages;
   }
 
   public void execute(SensorContext context) {
-    Collection<Sensor> sensors = selector.select(Sensor.class, module, true, sensorMatcher);
+    Collection<Sensor> sensors = selector.select(Sensor.class, true, sensorMatcher);
     eventBus.fireEvent(new SensorsPhaseEvent(Lists.newArrayList(sensors), true));
+
+    for (String languageKey : moduleLanguages.getModuleLanguageKeys()) {
+      for (File f : fs.files(FileQuery.onSource().onLanguage(languageKey))) {
+        if (Java.KEY.equals(languageKey)) {
+          JavaFile sonarFile = JavaFile.fromIOFile(f, module, false);
+          context.index(sonarFile);
+        } else {
+          org.sonar.api.resources.File sonarFile = org.sonar.api.resources.File.fromIOFile(f, module);
+          sonarFile.setLanguage(languages.get(languageKey));
+          context.index(sonarFile);
+        }
+      }
+      for (File f : fs.files(FileQuery.onTest().onLanguage(languageKey))) {
+        if (Java.KEY.equals(languageKey)) {
+          JavaFile sonarFile = JavaFile.fromIOFile(f, module, true);
+          context.index(sonarFile);
+        } else {
+          org.sonar.api.resources.File sonarFile = org.sonar.api.resources.File.fromIOFile(f, module);
+          sonarFile.setLanguage(languages.get(languageKey));
+          context.index(sonarFile);
+        }
+      }
+    }
 
     for (Sensor sensor : sensors) {
 
-      for (String language : languages.getModuleLanguageKeys()) {
+      for (String language : moduleLanguages.getModuleLanguageKeys()) {
         moduleInitializer.initLanguage(module, language);
         if (sensor.shouldExecuteOnProject(module)) {
           // SONAR-2965 In case the sensor takes too much time we close the session to not face a timeout

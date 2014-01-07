@@ -51,9 +51,9 @@ public class LanguageRecognizerTest {
     assertThat(recognizer.of(temp.newFile("Foo.jav"))).isEqualTo("java");
     assertThat(recognizer.of(temp.newFile("Foo.Jav"))).isEqualTo("java");
 
-    // multi-language is not supported yet -> filter on project language
-    assertThat(recognizer.of(temp.newFile("abc.cbl"))).isNull();
-    assertThat(recognizer.of(temp.newFile("abc.CBL"))).isNull();
+    assertThat(recognizer.of(temp.newFile("abc.cbl"))).isEqualTo("cobol");
+    assertThat(recognizer.of(temp.newFile("abc.CBL"))).isEqualTo("cobol");
+
     assertThat(recognizer.of(temp.newFile("abc.php"))).isNull();
     assertThat(recognizer.of(temp.newFile("abc"))).isNull();
     recognizer.stop();

@@ -19,13 +19,9 @@
  */
 package org.sonar.plugins.core.sensors;
 
-import org.sonar.api.profiles.RulesProfile;
-
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.database.DatabaseSession;
-import org.sonar.api.measures.CoreMetrics;
-import org.sonar.api.measures.Measure;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
 
@@ -41,21 +37,25 @@ public class ProfileSensor implements Sensor {
 
   public boolean shouldExecuteOnProject(Project project) {
     // Views will define a fake profile with a null id
-    return profile.getId() != null;
+    // return profile.getId() != null;
+
+    // TODO
+    return false;
   }
 
   public void analyse(Project project, SensorContext context) {
-    Measure measure = new Measure(CoreMetrics.PROFILE, profile.getName());
-    Measure measureVersion = new Measure(CoreMetrics.PROFILE_VERSION, Integer.valueOf(profile.getVersion()).doubleValue());
-    if (profile.getId() != null) {
-      RulesProfile defaultRulesProfile = session.getEntity(RulesProfile.class, profile.getId());
-      measure.setValue(defaultRulesProfile.getId().doubleValue());
-
-      defaultRulesProfile.setUsed(true);
-      session.merge(defaultRulesProfile);
-    }
-    context.saveMeasure(measure);
-    context.saveMeasure(measureVersion);
+    // FIXME
+    // Measure measure = new Measure(CoreMetrics.PROFILE, profile.getName());
+    // Measure measureVersion = new Measure(CoreMetrics.PROFILE_VERSION, Integer.valueOf(profile.getVersion()).doubleValue());
+    // if (profile.getId() != null) {
+    // RulesProfile defaultRulesProfile = session.getEntity(RulesProfile.class, profile.getId());
+    // measure.setValue(defaultRulesProfile.getId().doubleValue());
+    //
+    // defaultRulesProfile.setUsed(true);
+    // session.merge(defaultRulesProfile);
+    // }
+    // context.saveMeasure(measure);
+    // context.saveMeasure(measureVersion);
   }
 
   @Override

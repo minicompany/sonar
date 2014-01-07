@@ -125,7 +125,15 @@ public final class CoreMetrics {
       .setDomain(DOMAIN_SIZE)
       .create();
 
+  /**
+   * @deprecated since 4.2 they are now only directories
+   */
+  @Deprecated
   public static final String PACKAGES_KEY = "packages";
+  /**
+   * @deprecated since 4.2 they are now only directories
+   */
+  @Deprecated
   public static final Metric PACKAGES = new Metric.Builder(PACKAGES_KEY, "Packages", Metric.ValueType.INT)
       .setDescription("Packages")
       .setDirection(Metric.DIRECTION_WORST)

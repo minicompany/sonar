@@ -528,8 +528,8 @@ public class DefaultIndex extends SonarIndex {
 
     boolean excluded = checkExclusion(resource, parentBucket);
     if (!excluded) {
-      Resource parentSnapshot = parentBucket != null ? parentBucket.getResource() : null;
-      Snapshot snapshot = persistence.saveResource(currentProject, resource, parentSnapshot);
+      Resource parentResource = parentBucket != null ? parentBucket.getResource() : null;
+      Snapshot snapshot = persistence.saveResource(currentProject, resource, parentResource);
       if (ResourceUtils.isPersistable(resource) && !Qualifiers.LIBRARY.equals(resource.getQualifier())) {
         graph.addComponent(resource, snapshot);
       }

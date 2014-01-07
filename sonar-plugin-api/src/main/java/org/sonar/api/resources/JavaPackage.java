@@ -24,14 +24,17 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * A class that represents a Java package in Sonar
- * 
+ *
  * @since 1.10
+ * @deprecated in 4.2 use {@link Directory} even for Java files
  */
 public class JavaPackage extends Resource {
 
   /**
    * Default package name for classes without package definition
+   * @deprecated since 4.2 use {@link Directory#ROOT}
    */
+  @Deprecated
   public static final String DEFAULT_PACKAGE_NAME = "[default]";
 
   /**
@@ -42,17 +45,20 @@ public class JavaPackage extends Resource {
   }
 
   /**
-   * Creates a JavaPackage from its key. Will use DEFAULT_PACKAGE_NAME if key is null
+   * Creates a JavaPackage from its key. Will use Directory.ROOT if key is null
    */
   public JavaPackage(String key) {
-    setKey(StringUtils.defaultIfEmpty(StringUtils.trim(key), DEFAULT_PACKAGE_NAME));
+    if (DEFAULT_PACKAGE_NAME.equals(key)) {
+      key = Directory.ROOT;
+    }
+    setKey(StringUtils.defaultIfEmpty(StringUtils.trim(key), Directory.ROOT));
   }
 
   /**
    * @return whether the JavaPackage key is the default key
    */
   public boolean isDefault() {
-    return StringUtils.equals(getKey(), DEFAULT_PACKAGE_NAME);
+    return StringUtils.equals(getKey(), DEFAULT_PACKAGE_NAME) || StringUtils.equals(getKey(), Directory.ROOT);
   }
 
   /**
@@ -84,7 +90,7 @@ public class JavaPackage extends Resource {
    */
   @Override
   public String getQualifier() {
-    return Qualifiers.PACKAGE;
+    return Qualifiers.DIRECTORY;
   }
 
   /**
@@ -92,7 +98,7 @@ public class JavaPackage extends Resource {
    */
   @Override
   public String getName() {
-    return getKey();
+    return StringUtils.defaultIfBlank(getPath(), getKey());
   }
 
   /**
@@ -112,18 +118,18 @@ public class JavaPackage extends Resource {
   }
 
   /**
-   * @return Java
+   * @return null
    */
   @Override
   public Language getLanguage() {
-    return Java.INSTANCE;
+    return null;
   }
 
   @Override
   public String toString() {
     return new ToStringBuilder(this)
-        .append("id", getId())
-        .append("key", getKey())
-        .toString();
+      .append("id", getId())
+      .append("key", getKey())
+      .toString();
   }
 }

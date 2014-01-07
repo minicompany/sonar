@@ -47,7 +47,7 @@ public class BatchExtensionDictionnaryTest {
     final Sensor sensor1 = new FakeSensor(), sensor2 = new FakeSensor();
 
     BatchExtensionDictionnary selector = newSelector(sensor1, sensor2);
-    Collection<Sensor> sensors = selector.select(Sensor.class, null, true, new ExtensionMatcher() {
+    Collection<Sensor> sensors = selector.select(Sensor.class, true, new ExtensionMatcher() {
       @Override
       public boolean accept(Object extension) {
         return extension.equals(sensor1);

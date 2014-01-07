@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.database.model.ResourceModel;
+import org.sonar.api.resources.Directory;
 import org.sonar.api.resources.JavaFile;
 import org.sonar.api.resources.JavaPackage;
 import org.sonar.api.resources.Library;
@@ -141,7 +142,7 @@ public class DefaultResourcePersisterTest extends AbstractDbUnitTestCase {
 
     ResourcePersister persister = new DefaultResourcePersister(getSession(), mock(ResourcePermissions.class), snapshotCache, resourceCache);
     persister.saveProject(singleProject, null);
-    persister.saveResource(singleProject, new JavaPackage("org.foo").setEffectiveKey("foo:org.foo"));
+    persister.saveResource(singleProject, new Directory("org/foo").setEffectiveKey("foo:org/foo"));
 
     // check that the directory is attached to the project
     checkTables("shouldSaveNewDirectory", new String[] {"build_date", "created_at"}, "projects", "snapshots");

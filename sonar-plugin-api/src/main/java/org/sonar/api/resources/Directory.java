@@ -26,25 +26,26 @@ import org.sonar.api.utils.WildcardPattern;
 /**
  * @since 1.10
  */
-public class Directory extends Resource {
+public class Directory extends JavaPackage {
 
   public static final String SEPARATOR = "/";
   public static final String ROOT = "[root]";
-
-  private Language language;
 
   public Directory(String key) {
     this(key, null);
   }
 
+  /**
+   * @deprecated since 4.2 no more language on a directory (can contains several languages)
+   */
+  @Deprecated
   public Directory(String key, Language language) {
     setKey(parseKey(key));
-    this.language = language;
   }
 
   @Override
   public String getName() {
-    return getKey();
+    return StringUtils.defaultIfBlank(getPath(), getKey());
   }
 
   @Override
@@ -59,7 +60,7 @@ public class Directory extends Resource {
 
   @Override
   public Language getLanguage() {
-    return language;
+    return null;
   }
 
   @Override
@@ -98,8 +99,8 @@ public class Directory extends Resource {
   @Override
   public String toString() {
     return new ToStringBuilder(this)
-        .append("key", getKey())
-        .append("language", language)
-        .toString();
+      .append("key", getKey())
+      .append("path", getPath())
+      .toString();
   }
 }

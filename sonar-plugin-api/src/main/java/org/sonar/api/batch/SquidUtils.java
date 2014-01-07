@@ -34,7 +34,7 @@ public final class SquidUtils {
     String extension = StringUtils.lowerCase(FilenameUtils.getExtension(key));
     boolean isJavaFile = "jav".equals(extension) || "java".equals(extension);
     if (isJavaFile) {
-      key = key.substring(0, key.length() - extension.length() -1);
+      key = key.substring(0, key.length() - extension.length() - 1);
     }
 
     String convertedKey = key.replace('/', '.');
@@ -48,9 +48,12 @@ public final class SquidUtils {
     return new JavaFile(convertedKey);
   }
 
+  /**
+   * @deprecated since 4.2 JavaPackage key is now the same than directory (ie path)
+   */
+  @Deprecated
   public static JavaPackage convertJavaPackageKeyFromSquidFormat(String key) {
-    String convertedKey = key.replace('/', '.');
-    return new JavaPackage(convertedKey);
+    return new JavaPackage(key);
   }
 
   public static String convertToSquidKeyFormat(JavaFile file) {

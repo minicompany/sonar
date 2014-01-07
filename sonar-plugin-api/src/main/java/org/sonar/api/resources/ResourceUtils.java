@@ -59,9 +59,11 @@ public final class ResourceUtils {
 
   /**
    * @return whether a resource is a package
+   * @deprecated since 4.2 Package are now directory. Use {@link #isDirectory(Resource)}
    */
+  @Deprecated
   public static boolean isPackage(Resource resource) {
-    return resource != null && Qualifiers.PACKAGE.equals(resource.getQualifier());
+    return isDirectory(resource);
   }
 
   /**
@@ -136,6 +138,6 @@ public final class ResourceUtils {
    */
   public static boolean isPersistable(Resource resource) {
     return StringUtils.equals(Scopes.PROJECT, resource.getScope()) || StringUtils.equals(Scopes.DIRECTORY, resource.getScope()) ||
-        StringUtils.equals(Scopes.FILE, resource.getScope());
+      StringUtils.equals(Scopes.FILE, resource.getScope());
   }
 }

@@ -101,6 +101,10 @@ public class File extends Resource {
   public Directory getParent() {
     if (parent == null) {
       parent = new Directory(directoryKey);
+      String filePath = getPath();
+      if (StringUtils.isNotBlank(filePath)) {
+        parent.setPath(StringUtils.substringBeforeLast(filePath, Directory.SEPARATOR));
+      }
     }
     return parent;
   }
@@ -128,7 +132,9 @@ public class File extends Resource {
 
   /**
    * Creates a File from an io.file and a list of sources directories
+   * @deprecated use {@link #fromIOFile(java.io.File, Project)}
    */
+  @Deprecated
   public static File fromIOFile(java.io.File file, List<java.io.File> sourceDirs) {
     PathResolver.RelativePath relativePath = new PathResolver().relativePath(sourceDirs, file);
     if (relativePath != null) {
@@ -141,7 +147,10 @@ public class File extends Resource {
    * Creates a File from its name and a project
    */
   public static File fromIOFile(java.io.File file, Project project) {
-    return fromIOFile(file, project.getFileSystem().getSourceDirs());
+    File f = fromIOFile(file, project.getFileSystem().getSourceDirs());
+    String path = new PathResolver().relativePath(project.getFileSystem().getBasedir(), file);
+    f.setPath(path);
+    return f;
   }
 
   /**
@@ -161,7 +170,7 @@ public class File extends Resource {
    */
   @Override
   public String getLongName() {
-    return getKey();
+    return StringUtils.defaultIfBlank(getPath(), getKey());
   }
 
   /**
@@ -217,6 +226,7 @@ public class File extends Resource {
   public String toString() {
     return new ToStringBuilder(this)
       .append("key", getKey())
+      .append("path", getPath())
       .append("dir", directoryKey)
       .append("filename", filename)
       .append("language", language)

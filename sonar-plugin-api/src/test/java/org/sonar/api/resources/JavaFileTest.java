@@ -43,18 +43,18 @@ public class JavaFileTest {
   public void testNewClass() {
     JavaFile javaClass = new JavaFile("org.foo.bar.Hello", false);
     assertThat(javaClass.getKey(), is("org.foo.bar.Hello"));
-    assertThat(javaClass.getName(), is("Hello"));
+    assertThat(javaClass.getName(), is("Hello.java"));
     assertThat(javaClass.getLongName(), is("org.foo.bar.Hello"));
-    assertThat(javaClass.getParent().getKey(), is("org.foo.bar"));
+    assertThat(javaClass.getParent().getKey(), is("org/foo/bar"));
   }
 
   @Test
   public void testNewClassWithExplicitPackage() {
     JavaFile javaClass = new JavaFile("org.foo.bar", "Hello", false);
     assertThat(javaClass.getKey(), is("org.foo.bar.Hello"));
-    assertThat(javaClass.getName(), is("Hello"));
+    assertThat(javaClass.getName(), is("Hello.java"));
     assertThat(javaClass.getLongName(), is("org.foo.bar.Hello"));
-    assertThat(javaClass.getParent().getKey(), is("org.foo.bar"));
+    assertThat(javaClass.getParent().getKey(), is("org/foo/bar"));
   }
 
   @Test
@@ -68,7 +68,7 @@ public class JavaFileTest {
   public void testNewClassWithEmptyPackage() {
     JavaFile javaClass = new JavaFile("", "Hello", false);
     assertThat(javaClass.getKey(), is(JavaPackage.DEFAULT_PACKAGE_NAME + ".Hello"));
-    assertThat(javaClass.getName(), is("Hello"));
+    assertThat(javaClass.getName(), is("Hello.java"));
     assertThat(javaClass.getLongName(), is("Hello"));
     assertThat((javaClass.getParent()).isDefault(), is(true));
   }
@@ -77,7 +77,7 @@ public class JavaFileTest {
   public void testNewClassWithNullPackage() {
     JavaFile javaClass = new JavaFile(null, "Hello", false);
     assertThat(javaClass.getKey(), is(JavaPackage.DEFAULT_PACKAGE_NAME + ".Hello"));
-    assertThat(javaClass.getName(), is("Hello"));
+    assertThat(javaClass.getName(), is("Hello.java"));
     assertThat(javaClass.getLongName(), is("Hello"));
     assertThat((javaClass.getParent()).isDefault(), is(true));
   }
@@ -86,7 +86,7 @@ public class JavaFileTest {
   public void shouldBeDefaultPackageIfNoPackage() {
     JavaFile javaClass = new JavaFile("Hello", false);
     assertEquals(JavaPackage.DEFAULT_PACKAGE_NAME + ".Hello", javaClass.getKey());
-    assertThat(javaClass.getName(), is("Hello"));
+    assertThat(javaClass.getName(), is("Hello.java"));
     assertThat(javaClass.getLongName(), is("Hello"));
     assertThat(javaClass.getParent().isDefault(), is(true));
   }
@@ -96,9 +96,9 @@ public class JavaFileTest {
     JavaFile javaClass = new JavaFile("org.foo.bar.Java", false);
     assertThat(javaClass.getKey(), is("org.foo.bar.Java"));
     assertThat(javaClass.getLongName(), is("org.foo.bar.Java"));
-    assertThat(javaClass.getName(), is("Java"));
+    assertThat(javaClass.getName(), is("Java.java"));
     JavaPackage parent = javaClass.getParent();
-    assertEquals("org.foo.bar", parent.getKey());
+    assertEquals("org/foo/bar", parent.getKey());
   }
 
   @Test
@@ -106,9 +106,9 @@ public class JavaFileTest {
     JavaFile clazz = new JavaFile("   org.foo.bar.Hello   ", false);
     assertThat(clazz.getKey(), is("org.foo.bar.Hello"));
     assertThat(clazz.getLongName(), is("org.foo.bar.Hello"));
-    assertThat(clazz.getName(), is("Hello"));
+    assertThat(clazz.getName(), is("Hello.java"));
     JavaPackage parent = clazz.getParent();
-    assertThat(parent.getKey(), is("org.foo.bar"));
+    assertThat(parent.getKey(), is("org/foo/bar"));
   }
 
   @Test
@@ -137,7 +137,7 @@ public class JavaFileTest {
     List<File> sources = Arrays.asList(sourceDir);
     JavaFile javaFile = JavaFile.fromAbsolutePath(absPath(sourceDir, "onelevel/MyFile.java"), sources, false);
     assertEquals("onelevel.MyFile", javaFile.getKey());
-    assertEquals("MyFile", javaFile.getName());
+    assertEquals("MyFile.java", javaFile.getName());
     assertEquals("onelevel", javaFile.getParent().getKey());
     assertEquals("onelevel", javaFile.getParent().getName());
     assertThat((javaFile.getParent()).isDefault(), is(false));
@@ -151,8 +151,8 @@ public class JavaFileTest {
     JavaFile javaFile = JavaFile.fromAbsolutePath(absPath(sources2, "foo/bar/MyFile.java"), sources, false);
     assertThat("foo.bar.MyFile", is(javaFile.getKey()));
     assertThat(javaFile.getLongName(), is("foo.bar.MyFile"));
-    assertThat(javaFile.getName(), is("MyFile"));
-    assertThat(javaFile.getParent().getKey(), is("foo.bar"));
+    assertThat(javaFile.getName(), is("MyFile.java"));
+    assertThat(javaFile.getParent().getKey(), is("foo/bar"));
   }
 
   @Test
@@ -163,7 +163,7 @@ public class JavaFileTest {
 
     JavaFile javaClass = JavaFile.fromAbsolutePath(absPath(source1, "MyClass.java"), sources, false);
     assertEquals(JavaPackage.DEFAULT_PACKAGE_NAME + ".MyClass", javaClass.getKey());
-    assertEquals("MyClass", javaClass.getName());
+    assertEquals("MyClass.java", javaClass.getName());
 
     assertThat((javaClass.getParent()).isDefault(), is(true));
   }

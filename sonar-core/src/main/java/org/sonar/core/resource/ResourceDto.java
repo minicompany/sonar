@@ -25,6 +25,7 @@ public class ResourceDto {
 
   private Long id;
   private String key;
+  private String path;
   private String name;
   private String longName;
   private Long rootId;
@@ -61,6 +62,15 @@ public class ResourceDto {
 
   public ResourceDto setKey(String s) {
     this.key = s;
+    return this;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public ResourceDto setPath(String s) {
+    this.path = s;
     return this;
   }
 

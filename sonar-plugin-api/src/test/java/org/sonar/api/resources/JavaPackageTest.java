@@ -19,17 +19,20 @@
  */
 package org.sonar.api.resources;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 
 public class JavaPackageTest {
   @Test
   public void defaultPackage() {
     assertEquals(new JavaPackage(), new JavaPackage());
-    assertEquals(JavaPackage.DEFAULT_PACKAGE_NAME, new JavaPackage(null).getKey());
-    assertEquals(JavaPackage.DEFAULT_PACKAGE_NAME, new JavaPackage(null).getName());
-    assertEquals(JavaPackage.DEFAULT_PACKAGE_NAME, new JavaPackage("").getKey());
+    assertEquals(Directory.ROOT, new JavaPackage(null).getKey());
+    assertEquals(Directory.ROOT, new JavaPackage(null).getName());
+    assertEquals(Directory.ROOT, new JavaPackage("").getKey());
     assertThat(new JavaPackage(null).isDefault(), is(true));
   }
 

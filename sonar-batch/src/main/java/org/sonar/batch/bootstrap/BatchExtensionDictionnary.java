@@ -22,9 +22,7 @@ package org.sonar.batch.bootstrap;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.ClassUtils;
 import org.sonar.api.BatchExtension;
-import org.sonar.api.batch.CheckProject;
 import org.sonar.api.platform.ComponentContainer;
-import org.sonar.api.resources.Project;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,26 +36,25 @@ public class BatchExtensionDictionnary extends org.sonar.api.batch.BatchExtensio
     super(componentContainer);
   }
 
-  public <T> Collection<T> select(Class<T> type, Project project, boolean sort, ExtensionMatcher matcher) {
-    List<T> result = getFilteredExtensions(type, project, matcher);
+  public <T> Collection<T> select(Class<T> type, boolean sort, ExtensionMatcher matcher) {
+    List<T> result = getFilteredExtensions(type, matcher);
     if (sort) {
       return sort(result);
     }
     return result;
   }
 
-  private <T> List<T> getFilteredExtensions(Class<T> type, Project project, ExtensionMatcher matcher) {
+  private <T> List<T> getFilteredExtensions(Class<T> type, ExtensionMatcher matcher) {
     List<T> result = Lists.newArrayList();
     for (BatchExtension extension : getExtensions()) {
-      if (shouldKeep(type, extension, project, matcher)) {
+      if (shouldKeep(type, extension, matcher)) {
         result.add((T) extension);
       }
     }
     return result;
   }
 
-  private boolean shouldKeep(Class type, Object extension, Project project, ExtensionMatcher matcher) {
-    boolean keep = ClassUtils.isAssignable(extension.getClass(), type) && (matcher == null || matcher.accept(extension));
-    return keep && project != null && ClassUtils.isAssignable(extension.getClass(), CheckProject.class);
+  private boolean shouldKeep(Class type, Object extension, ExtensionMatcher matcher) {
+    return ClassUtils.isAssignable(extension.getClass(), type) && (matcher == null || matcher.accept(extension));
   }
 }

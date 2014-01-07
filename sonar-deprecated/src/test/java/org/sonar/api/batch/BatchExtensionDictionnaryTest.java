@@ -132,7 +132,7 @@ public class BatchExtensionDictionnaryTest {
   @Test
   public void methodDependsUponArray() {
     BatchExtension a = new GeneratesSomething("foo");
-    BatchExtension b = new MethodDependentOf(new String[]{"foo"});
+    BatchExtension b = new MethodDependentOf(new String[] {"foo"});
 
     BatchExtensionDictionnary selector = newSelector(a, b);
     List<BatchExtension> extensions = Lists.newArrayList(selector.select(BatchExtension.class, null, true));
@@ -192,18 +192,6 @@ public class BatchExtensionDictionnaryTest {
     assertThat(extensions).hasSize(2);
     assertThat(extensions.get(0)).isEqualTo(a);
     assertThat(extensions.get(1)).isEqualTo(b);
-  }
-
-  @Test
-  public void checkProject() {
-    BatchExtension ok = new CheckProjectOK();
-    BatchExtension ko = new CheckProjectKO();
-
-    BatchExtensionDictionnary selector = newSelector(ok, ko);
-    List<BatchExtension> extensions = Lists.newArrayList(selector.select(BatchExtension.class, new Project("key"), true));
-
-    assertThat(extensions).hasSize(1);
-    assertThat(extensions.get(0)).isInstanceOf(CheckProjectOK.class);
   }
 
   @Test

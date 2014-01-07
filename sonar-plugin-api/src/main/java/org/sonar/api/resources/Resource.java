@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 /**
  * The interface to implement to create a resource in Sonar
- * 
+ *
  * @since 1.10
  */
 public abstract class Resource implements Serializable {
@@ -126,6 +126,8 @@ public abstract class Resource implements Serializable {
 
   private boolean isExcluded = false;
 
+  private String path = null;
+
   /**
    * @return the resource key
    */
@@ -182,7 +184,7 @@ public abstract class Resource implements Serializable {
 
   /**
    * Check resource against an Ant pattern, like mypackag?/*Foo.java. It's used for example to match resource exclusions.
-   * 
+   *
    * @param antPattern Ant-like pattern (with **, * and ?). It includes file suffixes.
    * @return true if the resource matches the Ant pattern
    */
@@ -230,12 +232,25 @@ public abstract class Resource implements Serializable {
     return this;
   }
 
+  public String getPath() {
+    return path;
+  }
+
+  public Resource setPath(String path) {
+    this.path = path;
+    return this;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (o == null) {
+      return false;
+    }
+    // JavaPackage and Directory are considered equivalent since 4.2
+    if (getClass() != o.getClass() && !(this instanceof JavaPackage || this instanceof Directory && o instanceof JavaPackage || o instanceof Directory)) {
       return false;
     }
 

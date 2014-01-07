@@ -33,6 +33,7 @@ import java.util.List;
  */
 public class JavaFile extends Resource {
 
+  private static final String JAVA_SUFFIX = ".java";
   private String filename;
   private String longName;
   private String packageKey;
@@ -55,15 +56,15 @@ public class JavaFile extends Resource {
     if (className == null) {
       throw new IllegalArgumentException("Java filename can not be null");
     }
-    this.filename = StringUtils.trim(className);
+    this.filename = StringUtils.trim(className) + JAVA_SUFFIX;
     String key;
     if (StringUtils.isBlank(packageKey)) {
-      this.packageKey = JavaPackage.DEFAULT_PACKAGE_NAME;
-      this.longName = this.filename;
-      key = new StringBuilder().append(this.packageKey).append(".").append(this.filename).toString();
+      this.packageKey = Directory.ROOT;
+      this.longName = StringUtils.trim(className);
+      key = new StringBuilder().append(JavaPackage.DEFAULT_PACKAGE_NAME).append(".").append(StringUtils.trim(className)).toString();
     } else {
-      this.packageKey = packageKey.trim();
-      key = new StringBuilder().append(this.packageKey).append(".").append(this.filename).toString();
+      this.packageKey = packageKey.trim().replaceAll("\\.", Directory.SEPARATOR);
+      key = new StringBuilder().append(packageKey.trim()).append(".").append(StringUtils.trim(className)).toString();
       this.longName = key;
     }
     setKey(key);
@@ -90,14 +91,14 @@ public class JavaFile extends Resource {
     this.unitTest = unitTest;
 
     if (realKey.contains(".")) {
-      this.filename = StringUtils.substringAfterLast(realKey, ".");
-      this.packageKey = StringUtils.substringBeforeLast(realKey, ".");
+      this.filename = StringUtils.substringAfterLast(realKey, ".") + JAVA_SUFFIX;
+      this.packageKey = StringUtils.substringBeforeLast(realKey, ".").replaceAll("\\.", Directory.SEPARATOR);
       this.longName = realKey;
 
     } else {
-      this.filename = realKey;
+      this.filename = realKey + JAVA_SUFFIX;
       this.longName = realKey;
-      this.packageKey = JavaPackage.DEFAULT_PACKAGE_NAME;
+      this.packageKey = Directory.ROOT;
       realKey = new StringBuilder().append(JavaPackage.DEFAULT_PACKAGE_NAME).append(".").append(realKey).toString();
     }
     setKey(realKey);
@@ -110,6 +111,10 @@ public class JavaFile extends Resource {
   public JavaPackage getParent() {
     if (parent == null) {
       parent = new JavaPackage(packageKey);
+      String filePath = getPath();
+      if (StringUtils.isNotBlank(filePath)) {
+        parent.setPath(StringUtils.substringBeforeLast(filePath, Directory.SEPARATOR));
+      }
     }
     return parent;
 
@@ -176,8 +181,8 @@ public class JavaFile extends Resource {
   @Override
   public boolean matchFilePattern(String antPattern) {
     String fileKey = getKey();
-    if (!fileKey.endsWith(".java")) {
-      fileKey += ".java";
+    if (!fileKey.endsWith(JAVA_SUFFIX)) {
+      fileKey += JAVA_SUFFIX;
     }
     // Add wildcard extension if not provided
     if ((antPattern.contains("/") && StringUtils.substringAfterLast(antPattern, "/").indexOf('.') < 0) || antPattern.indexOf('.') < 0) {
@@ -213,12 +218,27 @@ public class JavaFile extends Resource {
    * @return the JavaFile created if exists, null otherwise
    */
   public static JavaFile fromIOFile(File file, List<File> sourceDirs, boolean unitTest) {
-    if (file == null || !StringUtils.endsWithIgnoreCase(file.getName(), ".java")) {
+    if (file == null || !StringUtils.endsWithIgnoreCase(file.getName(), JAVA_SUFFIX)) {
       return null;
     }
     PathResolver.RelativePath relativePath = new PathResolver().relativePath(sourceDirs, file);
     if (relativePath != null) {
       return fromRelativePath(relativePath.path(), unitTest);
+    }
+    return null;
+  }
+
+  public static JavaFile fromIOFile(File file, Project module, boolean unitTest) {
+    if (file == null || !StringUtils.endsWithIgnoreCase(file.getName(), JAVA_SUFFIX)) {
+      return null;
+    }
+    PathResolver.RelativePath relativePath = new PathResolver().relativePath(
+      unitTest ? module.getFileSystem().getTestDirs() : module.getFileSystem().getSourceDirs(),
+      file);
+    if (relativePath != null) {
+      JavaFile sonarFile = fromRelativePath(relativePath.path(), unitTest);
+      sonarFile.setPath(new PathResolver().relativePath(module.getFileSystem().getBasedir(), file));
+      return sonarFile;
     }
     return null;
   }

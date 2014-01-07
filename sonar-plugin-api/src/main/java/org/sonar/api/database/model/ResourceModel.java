@@ -54,6 +54,7 @@ public class ResourceModel extends BaseIdentifiable implements Cloneable {
   public static final int DESCRIPTION_COLUMN_SIZE = 2000;
   public static final int NAME_COLUMN_SIZE = 256;
   public static final int KEY_SIZE = 400;
+  public static final int PATH_SIZE = 2000;
 
   @Column(name = "name", updatable = true, nullable = true, length = NAME_COLUMN_SIZE)
   private String name;
@@ -75,6 +76,9 @@ public class ResourceModel extends BaseIdentifiable implements Cloneable {
 
   @Column(name = "kee", updatable = false, nullable = false, length = KEY_SIZE)
   private String key;
+
+  @Column(name = "path", updatable = true, nullable = true, length = PATH_SIZE)
+  private String path;
 
   @Column(name = "language", updatable = true, nullable = true, length = 20)
   private String languageKey;
@@ -249,6 +253,18 @@ public class ResourceModel extends BaseIdentifiable implements Cloneable {
     this.key = key;
   }
 
+  public String getPath() {
+    return path;
+  }
+
+  public ResourceModel setPath(String path) {
+    if (path != null && path.length() > PATH_SIZE) {
+      throw new IllegalArgumentException("Resource path is too long, max is " + PATH_SIZE + " characters. Got : " + path);
+    }
+    this.path = path;
+    return this;
+  }
+
   public Integer getRootId() {
     return rootId;
   }
@@ -283,37 +299,37 @@ public class ResourceModel extends BaseIdentifiable implements Cloneable {
     }
     ResourceModel other = (ResourceModel) obj;
     return new EqualsBuilder()
-        .append(key, other.key)
-        .append(enabled, other.enabled)
-        .append(rootId, other.rootId)
-        .isEquals();
+      .append(key, other.key)
+      .append(enabled, other.enabled)
+      .append(rootId, other.rootId)
+      .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(key)
-        .append(enabled)
-        .append(rootId)
-        .toHashCode();
+      .append(key)
+      .append(enabled)
+      .append(rootId)
+      .toHashCode();
   }
 
   @Override
   public String toString() {
     return new ToStringBuilder(this)
-        .append("id", getId())
-        .append("key", key)
-        .append("scope", scope)
-        .append("qualifier", qualifier)
-        .append("name", name)
-        .append("longName", longName)
-        .append("lang", languageKey)
-        .append("enabled", enabled)
-        .append("rootId", rootId)
-        .append("copyResourceId", copyResourceId)
-        .append("personId", personId)
-        .append("createdAt", createdAt)
-        .toString();
+      .append("id", getId())
+      .append("key", key)
+      .append("scope", scope)
+      .append("qualifier", qualifier)
+      .append("name", name)
+      .append("longName", longName)
+      .append("lang", languageKey)
+      .append("enabled", enabled)
+      .append("rootId", rootId)
+      .append("copyResourceId", copyResourceId)
+      .append("personId", personId)
+      .append("createdAt", createdAt)
+      .toString();
   }
 
   @Override

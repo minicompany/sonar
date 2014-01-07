@@ -61,6 +61,10 @@ public final class Qualifiers {
    */
   public static final String MODULE = "BRC";
 
+  /**
+   * @deprecated since 4.2 now packages are considered as regular directories
+   */
+  @Deprecated
   public static final String PACKAGE = "PAC";
   public static final String DIRECTORY = "DIR";
   public static final String FILE = "FIL";
@@ -118,9 +122,11 @@ public final class Qualifiers {
 
   /**
    * @param resource not nullable
+   * @deprecated since 4.2 Package are now directory. Use {@link #isDirectory(Resource)}
    */
+  @Deprecated
   public static boolean isPackage(final Resource resource) {
-    return StringUtils.equals(PACKAGE, resource.getQualifier());
+    return isDirectory(resource);
   }
 
   /**
