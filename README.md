@@ -1,3 +1,5 @@
+mvn clean install -DskipTests=true
+
 # SonarQube
 
 Put your technical debt under control. For more information please see:
